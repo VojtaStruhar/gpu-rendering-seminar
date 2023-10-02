@@ -83,9 +83,15 @@ void main()
 	//	 Hint: See a uniform variable shadow_matrix.
 	//	 Hint: Think about the value of w of in_data.position_ws, and don't forget to divide the result by w.
 	vec4 shadow_tex_coord = shadow_matrix * vec4(in_data.position_ws, 1.0);
-	final_color = vec4(vec3(shadow_tex_coord.z / shadow_tex_coord.w),1); return;
+
 	// TASK 5: Obtain the value in the shadow texture and display it as the final color.
 	//	 Hint: See a uniform variable shadow_tex.
+
+	// Vydeleni w prevadi zpatky do XYZ souradnic
+	vec3 shadow_depth = texture(shadow_tex, shadow_tex_coord.xy / shadow_tex_coord.w).rrr;
+	final_color = vec4(shadow_depth, 1);
+	return;
+
 	// TASK 6: Compare both values and apply the shadows to the lighting.
 	// TASK 8: Use 'textureProj' instead of 'texture' for sampling the shadow texture.
 	// TASK 8: Use sampler2DShadow instead of sampler2D for the shadow texture.

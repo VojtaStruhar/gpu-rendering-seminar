@@ -275,6 +275,8 @@ void Application::render_scene(bool from_light, bool gen_shadows) {
     //		   Call it when the program is active.
     // TASK 5: Send 'shadow_texture' into appropriate shader program.
     //	 Hint: We use texture unit 1 for all shaders, so that the texture could be bound only once, at the beginning of this function.
+    glBindTextureUnit(1, shadow_texture);
+
     // TASK 7: Use glPolygonOffset(2.0f, 0.0f)
     //	 Hint: Don't forget to glEnable/glDisable(GL_POLYGON_OFFSET_FILL)
     // TASK 7: Cull front faces.

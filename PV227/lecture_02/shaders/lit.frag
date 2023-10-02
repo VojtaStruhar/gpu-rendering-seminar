@@ -89,10 +89,11 @@ void main()
 
 	// Vydeleni w prevadi zpatky do XYZ souradnic
 	vec3 shadow_depth = texture(shadow_tex, shadow_tex_coord.xy / shadow_tex_coord.w).rrr;
-	final_color = vec4(shadow_depth, 1);
-	return;
 
 	// TASK 6: Compare both values and apply the shadows to the lighting.
+	float shadow_factor = (shadow_tex_coord.z / shadow_tex_coord.w) > shadow_depth.r ? 0.0 : 1.0;
+
+
 	// TASK 8: Use 'textureProj' instead of 'texture' for sampling the shadow texture.
 	// TASK 8: Use sampler2DShadow instead of sampler2D for the shadow texture.
 
@@ -164,4 +165,7 @@ void main()
 
 	// Outputs the final light color.
 	final_color = vec4(final_light, material.alpha);
+
+	// TASK 6: Applying the shadow
+	final_color = vec4(shadow_factor * final_color.rgb, final_color.w);
 }

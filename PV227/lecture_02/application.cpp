@@ -1,7 +1,8 @@
 #include "application.hpp"
 #include "utils.hpp"
 
-Application::Application(int initial_width, int initial_height, std::vector<std::string> arguments) : PV227Application(initial_width, initial_height, arguments) {
+Application::Application(int initial_width, int initial_height, std::vector<std::string> arguments)
+    : PV227Application(initial_width, initial_height, arguments) {
     Application::compile_shaders();
     prepare_cameras();
     prepare_textures();
@@ -20,7 +21,7 @@ void Application::compile_shaders() {
     default_lit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "lit.frag");
     display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert", lecture_shaders_path / "display_texture.frag");
     // TASK 3: Prepare special shader program for rendering into the shadow map.
-    // generate_shadow_program = ...
+    generate_shadow_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "nothing.frag");
 
     std::cout << "Shaders are reloaded." << std::endl;
 }
@@ -32,13 +33,14 @@ void Application::prepare_cameras() {
     // Sets the default camera position.
     camera.set_eye_position(glm::radians(-45.f), glm::radians(20.f), 25.f);
     // Computes the projection matrix.
-    camera_ubo.set_projection(glm::perspective(glm::radians(45.f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 1000.0f));
+    camera_ubo.set_projection(
+        glm::perspective(glm::radians(45.f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 1000.0f));
     camera_ubo.update_opengl_data();
 
     // TASK 1: Initialize the projection matrix for the light camera using glm::perspective function.
     //   Hint: Use glm::perspective, use 80 degrees as field of view, 2.0 as near plane, and 30.0 as far plane.
     //		   Think about the value of aspect ratio - what value should you use?
-    light_camera_projection = glm::mat4(1.0f); // <- modify this
+    light_camera_projection = glm::perspective(glm::radians(80.0f), 1.0f, 2.0f, 30.0f);
     light_camera_view = glm::mat4(1.0f);
     light_camera_data_ubo.set_projection(light_camera_projection);
     light_camera_data_ubo.set_view(light_camera_view);
@@ -56,7 +58,8 @@ void Application::prepare_lights() {
 }
 
 void Application::prepare_scene() {
-    ModelUBO floor_model_ubo(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.1f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 0.1f, 10.0f)));
+    ModelUBO floor_model_ubo(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.1f, 0.0f)) *
+                             glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 0.1f, 10.0f)));
     SceneObject floor_object(cube, floor_model_ubo, gray_material_ubo);
     scene_objects.push_back(floor_object);
 
@@ -115,7 +118,8 @@ void Application::update(float delta) {
 
     // Computes the light position.
     glm::vec3 light_position =
-        glm::vec3(15, 20, 15) * glm::vec3(cosf(gui_light_position / 6.0f) * sinf(gui_light_position), sinf(gui_light_position / 6.0f), cosf(gui_light_position / 6.0f) * cosf(gui_light_position));
+        glm::vec3(15, 20, 15) * glm::vec3(cosf(gui_light_position / 6.0f) * sinf(gui_light_position), sinf(gui_light_position / 6.0f),
+                                          cosf(gui_light_position / 6.0f) * cosf(gui_light_position));
 
     // Updates the light model visible in the scene.
     light_object.get_model_ubo().set_matrix(glm::translate(glm::mat4(1.0f), light_position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)));
@@ -123,19 +127,23 @@ void Application::update(float delta) {
 
     // Updates the OpenGL buffer storing the information about the light.
     phong_lights_ubo.clear();
-    phong_lights_ubo.add(PhongLightData::CreateSpotLight(light_position, glm::vec3(0.05f), glm::vec3(0.95f), glm::vec3(1.0f), -normalize(light_position), 20.0f, cosf(glm::radians(40.0f))));
+    phong_lights_ubo.add(PhongLightData::CreateSpotLight(light_position, glm::vec3(0.05f), glm::vec3(0.95f), glm::vec3(1.0f),
+                                                         -normalize(light_position), 20.0f, cosf(glm::radians(40.0f))));
     phong_lights_ubo.update_opengl_data();
 
     // Animates the objects.
-    torus_object_1.get_model_ubo().set_matrix(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.5f, 0.0f)) *
-                                              glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                                              glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-    torus_object_2.get_model_ubo().set_matrix(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, -4.5f)) *
-                                              glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                                              glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-    torus_object_3.get_model_ubo().set_matrix(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 4.5f)) *
-                                              glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                                              glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    torus_object_1.get_model_ubo().set_matrix(
+        glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.5f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    torus_object_2.get_model_ubo().set_matrix(
+        glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, -4.5f)) *
+        glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    torus_object_3.get_model_ubo().set_matrix(
+        glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 4.5f)) *
+        glm::rotate(glm::mat4(1.0f), static_cast<float>(elapsed_time) * 0.002f, glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
     torus_object_1.get_model_ubo().update_opengl_data();
     torus_object_2.get_model_ubo().update_opengl_data();
     torus_object_3.get_model_ubo().update_opengl_data();
@@ -143,7 +151,9 @@ void Application::update(float delta) {
     // TASK 1: Update the view matrix for the light camera using glm::lookAt function.
     //	 Hint: Use data of the first light from phong_lights_ubo (phong_lights_ubo.get_lights()[0]).
     //	       The light contains 'position' and 'spot_direction' variables that can be quite handy.
-    light_camera_view = glm::mat4(1.0f); // <- modify this
+    light_camera_view = glm::lookAt(glm::vec3(phong_lights_ubo.get_lights()[0].position),
+                                    glm::vec3(phong_lights_ubo.get_lights()[0].position) + phong_lights_ubo.get_lights()[0].spot_direction,
+                                    glm::vec3(0.0f, 1.0f, 0.0f));
     light_camera_data_ubo.set_view(light_camera_view);
     light_camera_data_ubo.update_opengl_data();
 
@@ -151,7 +161,9 @@ void Application::update(float delta) {
     //	 Hint: glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z))
     //	 Hint: glm::scale(glm::mat4(1.0f), glm::vec3(x, y, z))
     // TASK 7: Add additional translation to the shadow matrix.
-    shadow_matrix = glm::mat4(1.0f);
+    shadow_matrix =
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)) * light_camera_projection *
+        light_camera_view;
 }
 
 // ----------------------------------------------------------------------------
@@ -168,6 +180,18 @@ void Application::render() {
     // TASK 2: Render the scene into the shadow map.
     //   Hint: Do the same as if you rendered into the main window, just use correct FBO and change the associated parameters.
     //   Hint: See the definition of 'shadow_fbo' and 'shadow_tex_size';
+
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
+    glViewport(0, 0, shadow_tex_size, shadow_tex_size);
+
+    // Clears the framebuffer -> clears only the depth (there is no color).
+    glClearDepth(1.0);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    light_camera_data_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
+
+    render_scene(true, true);
 
     //--------------------------------------
     // Renders into the main window.
@@ -196,6 +220,13 @@ void Application::render() {
     case DISPLAY_VIEW_FROM_LIGHT: {
         // TASK 1: Render the scene from the position of the light.
         //   Hint: See the code above for 'DISPLAY_VIEW_FROM_MAIN_CAMERA'.
+
+        // We use the light camera.
+        light_camera_data_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
+        // Sets the lights.
+        phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
+        // Renders the scene.
+        render_scene(true, false);
         break;
     }
     case DISPLAY_SHADOW_TEXTURE: {
@@ -205,6 +236,7 @@ void Application::render() {
 
         // TASK 2: Display the shadow map (see also the TASK 2 in the display_texture.frag).
         //	 Hint: Use glBindTextureUnit as if it was any other texture.
+        glBindTextureUnit(0, shadow_texture);
         // TASK 8: Use GL_NONE as GL_TEXTURE_COMPARE_MODE when using shadow texture
         //	 Hint: It means calling glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_MODE, GL_NONE).
 
@@ -251,10 +283,14 @@ void Application::render_scene(bool from_light, bool gen_shadows) {
     //	 Hint: It means calling glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE).
     //	 Hint: Set also the compare function with glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL).
 
+    default_lit_program.uniform_matrix("shadow_matrix", shadow_matrix);
     for (SceneObject& object : scene_objects) {
-        render_object(object, default_lit_program);
+        render_object(object, gen_shadows ? generate_shadow_program : default_lit_program);
     }
-    render_object(light_object, default_unlit_program);
+
+    if (!from_light) {
+        render_object(light_object, default_unlit_program);
+    }
 }
 
 void Application::render_object(SceneObject& object, ShaderProgram& program) const {

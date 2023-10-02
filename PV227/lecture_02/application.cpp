@@ -268,11 +268,17 @@ void Application::render() {
 void Application::render_scene(bool from_light, bool gen_shadows) {
     // TASK 1: Do not render the light object when rendering from the light.
     //	 Hint: Utilize parameters of this function.
+    if (!from_light) {
+        render_object(light_object, default_unlit_program);
+    }
+
     // TASK 3: Use special shader program for rendering into the shadow map.
     //   Hint: Utilize parameters of this function.
     // TASK 4: Send shadow matrix into appropriate shader program.
     //	 Hint: To update uniform variable in shader program, use my_program.uniform_matrix("shadow_matrix", shadow_matrix);
     //		   Call it when the program is active.
+    default_lit_program.uniform_matrix("shadow_matrix", shadow_matrix);
+
     // TASK 5: Send 'shadow_texture' into appropriate shader program.
     //	 Hint: We use texture unit 1 for all shaders, so that the texture could be bound only once, at the beginning of this function.
     glBindTextureUnit(1, shadow_texture);
@@ -285,14 +291,10 @@ void Application::render_scene(bool from_light, bool gen_shadows) {
     //	 Hint: It means calling glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE).
     //	 Hint: Set also the compare function with glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL).
 
-    default_lit_program.uniform_matrix("shadow_matrix", shadow_matrix);
     for (SceneObject& object : scene_objects) {
         render_object(object, gen_shadows ? generate_shadow_program : default_lit_program);
     }
 
-    if (!from_light) {
-        render_object(light_object, default_unlit_program);
-    }
 }
 
 void Application::render_object(SceneObject& object, ShaderProgram& program) const {

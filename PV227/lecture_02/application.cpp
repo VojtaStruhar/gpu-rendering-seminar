@@ -162,8 +162,9 @@ void Application::update(float delta) {
     //	 Hint: glm::scale(glm::mat4(1.0f), glm::vec3(x, y, z))
     // TASK 7: Add additional translation to the shadow matrix.
     shadow_matrix =
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)) * light_camera_projection *
-        light_camera_view;
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.002f))
+            * glm::translate(glm::mat4(1.0f), glm::vec3(0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)) * light_camera_projection *
+            light_camera_view;
 }
 
 // ----------------------------------------------------------------------------
@@ -285,8 +286,18 @@ void Application::render_scene(bool from_light, bool gen_shadows) {
 
     // TASK 7: Use glPolygonOffset(2.0f, 0.0f)
     //	 Hint: Don't forget to glEnable/glDisable(GL_POLYGON_OFFSET_FILL)
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 0.0f);
     // TASK 7: Cull front faces.
     //	 Hint: Use glEnable/glDisable(GL_CULL_FACE), glCullFace(GL_FRONT) functions.
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+
+    if (!gen_shadows) {
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+
     // TASK 8: Use GL_COMPARE_REF_TO_TEXTURE as GL_TEXTURE_COMPARE_MODE when using shadow texture.
     //	 Hint: It means calling glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE).
     //	 Hint: Set also the compare function with glTextureParameteri(shadow_texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL).
@@ -294,6 +305,8 @@ void Application::render_scene(bool from_light, bool gen_shadows) {
     for (SceneObject& object : scene_objects) {
         render_object(object, gen_shadows ? generate_shadow_program : default_lit_program);
     }
+
+
 
 }
 

@@ -84,7 +84,7 @@ void main()
 	// TASK 5: Compute the distance between the pixel that is processed (in positions_tex) and the position of the light.
 	//		   Then discard the fragment if the distance is greater than light_range.
 	//	 Hint: Functions length/distance, discard -> 'discard' is like 'break', it is not a function, so do not write 'discard();', just 'discard;'.
-	final_color = vec4(1.0, 0.0, 0.0, 1.0);
+	//final_color = vec4(1.0, 0.0, 0.0, 1.0);
 
 	// TASK 3: Output light's diffuse color only (current light's index is in in_data.light_idx).
 	PhongLight current_light = lights[in_data.light_idx];
@@ -95,8 +95,8 @@ void main()
 	vec3 albedo = texture(albedo_tex, in_data.tex_coord).rgb;
 
 	// If the light doesn't reach the fragment, discard it?
-//	if (length(current_light.position.xyz, position) > light_range)
-//		return;
+	if (length(current_light.position.xyz - position) > light_range)
+		return;
 
 	final_color = vec4(current_light.diffuse, 1.0f);
 	return;

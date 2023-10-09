@@ -383,6 +383,16 @@ void Application::evaluate_lighting_using_spheres() {
     //	       glCullFace(GL_FRONT/GL_BACK),
     //         glBlendFunc(GL_ZERO/GL_ONE/GL_SRC_ALPHA/GL_ONE_MINUS_SRC_ALPHA)
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    // We want depth test enabled, but don't write into the depth buffer
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
     // Uses the proper program.
     evaluate_sphere_program.use();
 
@@ -404,6 +414,9 @@ void Application::evaluate_lighting_using_spheres() {
 
     // TASK 3: Reset the depth test, blending, and culling.
     //	 Hint: Disable blending and culling, enable writing into the depth buffer.
+    glDisable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 
     // Copies the result into the main window.
     glBindFramebuffer(GL_READ_FRAMEBUFFER, normal_scene_fbo);

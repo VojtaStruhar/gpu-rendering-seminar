@@ -79,8 +79,11 @@ void main()
 	//         light_range is the range into which the light shines.
 	//		   gl_InstanceID is the index the current instance, which is also the index of the light that is processed
 	
+	// world space
+	vec3 pos_ws = position.xyz * light_range + lights[gl_InstanceID].position.xyz;
 	// Position in clip space.
-	vec4 pos_cs = vec4(0.0);
+	vec4 pos_cs = vec4(projection * view * vec4(pos_ws, 1.0f));
+
 
 	// Sets the output variables.
 	out_data.light_idx = gl_InstanceID;

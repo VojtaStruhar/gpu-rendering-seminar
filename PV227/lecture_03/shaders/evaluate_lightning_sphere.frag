@@ -88,5 +88,85 @@ void main()
 
 	// TASK 3: Output light's diffuse color only (current light's index is in in_data.light_idx).
 	PhongLight current_light = lights[in_data.light_idx];
+
+
+	vec3 position = texture(positions_tex, in_data.tex_coord).rgb;
+	vec3 normal = texture(normals_tex, in_data.tex_coord).rgb;
+	vec3 albedo = texture(albedo_tex, in_data.tex_coord).rgb;
+
+	// If the light doesn't reach the fragment, discard it?
+//	if (length(current_light.position.xyz, position) > light_range)
+//		return;
+
 	final_color = vec4(current_light.diffuse, 1.0f);
+	return;
+
+	// Computes the lighting.
+	vec3 N = normalize(normal);
+	vec3 V = normalize(eye_position - position);
+
+	// Sets the starting coefficients.
+	vec3 amb = global_ambient_color;
+	vec3 dif = vec3(0.0);
+	vec3 spe = vec3(0.0);
+
+	// Processes all the lights.
+	for (int i = 0; i < lights_count; i++)
+	{
+		vec3 L_not_normalized = lights[i].position.xyz - position * lights[i].position.w;
+		vec3 L = normalize(L_not_normalized);
+		vec3 H = normalize(L + V);
+
+		// Calculates the basic Phong factors.
+		float Iamb = 1.0;
+		float Idif = max(dot(N, L), 0.0);
+		float Ispe = (Idif > 0.0) ? pow(max(dot(N, H), 0.0), material.shininess) : 0.0;
+
+		// Calculates spot light factor.
+		if (lights[i].spot_cos_cutoff != -1.0)
+		{
+			float spot_factor;
+			float spot_cos_angle = dot(-L, lights[i].spot_direction);
+			if (spot_cos_angle > lights[i].spot_cos_cutoff)
+			{
+				spot_factor = pow(spot_cos_angle, lights[i].spot_exponent);
+			}
+			else spot_factor = 0.0;
+
+			Iamb *= 1.0;
+			Idif *= spot_factor;
+			Ispe *= spot_factor;
+		}
+
+		// Calculates attenuation point/spot lights.
+		if (lights[i].position.w != 0.0)
+		{
+			float distance_from_light = length(L_not_normalized);
+			float atten_factor =
+			lights[i].atten_constant +
+			lights[i].atten_linear * distance_from_light +
+			lights[i].atten_quadratic * distance_from_light * distance_from_light;
+			atten_factor = 1.0 / atten_factor;
+
+			Iamb *= atten_factor;
+			Idif *= atten_factor;
+			Ispe *= atten_factor;
+		}
+
+		// Applies the factors to light color.
+		amb += Iamb * lights[i].ambient;
+		dif += Idif * lights[i].diffuse;
+		spe += Ispe * lights[i].specular;
+	}
+
+	// Computes the material - we either use material or texture as ambient and diffuse parts.
+	vec3 mat_ambient = albedo;
+	vec3 mat_diffuse = albedo;
+	vec3 mat_specular = material.specular;
+
+	// Computes the final light color.
+	vec3 final_light = mat_ambient * amb + mat_diffuse * dif + material.specular * spe;
+
+	final_color = vec4(final_light, material.alpha);
+
 }

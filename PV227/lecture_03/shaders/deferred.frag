@@ -42,14 +42,13 @@ void main()
 {
 	// TASK 1: Compute deferred_position, deferred_normal, and deferred_albedo. Use diffuse color as albedo.
 	//	 Hint: Look into forward.frag to see what to use.
-	deferred_position = vec4(0.0);
-	deferred_normal = vec4(0.0);
-	if(has_texture)
-	{
+	deferred_position = vec4(in_data.position_ws, 1.0f);
+	deferred_normal = vec4(normalize(in_data.normal_ws), 0.0f);  // Zero is used because of homogenious coordinates - a good habit
+	if(has_texture) {
 		// TASK 1: Extract the albedo color from the texture.
-		deferred_albedo = vec4(0.0);
-	}else{
+		deferred_albedo = texture(material_diffuse_texture, in_data.tex_coord);
+	} else {
 		// TASK 1: Extract the albedo (i.e., diffuse) color from the material.
-		deferred_albedo = vec4(0.0);
+		deferred_albedo = vec4(material.diffuse, 1.0f);
 	}
 }

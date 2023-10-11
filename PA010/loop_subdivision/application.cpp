@@ -12,15 +12,28 @@
  * @return	A position of the new vertex.
  */
 glm::vec3 Application::vertex_rule(Vertex const* const vertex) {
+
+    Edge* starting_edge = vertex->edge;
+
     std::vector<Vertex const*> vertices;
     {
         // TODO: Collect all vertices incident with the passed one via an edge.
         // HINTS:
         //  - vertices.push_back(v) - appends the passed vertex "v" into the vector "vertices".
         //  - For the half-edge definition see the Application.hpp file.
+
+        auto edge = vertex->edge;
+
+        do {
+            vertices.push_back(edge->end);
+            edge = edge->twin->next;
+
+        } while (edge != starting_edge && edge->start == vertex);
     }
 
+
     glm::vec3 result = glm::vec3(0, 0, 0);
+
     {
         // TODO: Use the vertices collected above to compute a position of the resulting vertex.
         // HINTS:
@@ -29,6 +42,19 @@ glm::vec3 Application::vertex_rule(Vertex const* const vertex) {
         //  - glm::pi<float>() - the constant PI (3.1415...)
         //  - vertices.size() - the number of vertices stored in the vector "vertices".
         //  - For the half-edge definition see the Application.hpp file.
+
+        float n = (float) vertices.size();
+
+
+        float center = (0.375f + (0.25f * cos(2.0f * glm::pi<float>() / n)));
+        float beta = (0.625f - (center * center)) / n;
+
+        glm::vec3 position_sum = glm::vec3(0.0f);
+        for (auto vert: vertices) {
+            position_sum += vert->position;
+        }
+
+        result = vertex->position * (1 - n * beta) + position_sum * beta;
     }
 
     return result;
@@ -48,6 +74,17 @@ glm::vec3 Application::edge_rule(Edge const* const edge) {
         // TODO: Implement the edge rule (see slides from the lecture).
         //HINTS:
         //  - For the half-edge definition see the Application.hpp file.
+
+        auto neighbor_left = edge->start;
+        auto neighbor_right = edge->end;
+
+        auto opposite_top = edge->next->end;
+        auto opposite_bottom = edge->twin->next->end;
+
+        result += neighbor_left->position * 3/8.0f;
+        result += neighbor_right->position * 3/8.0f;
+        result += opposite_bottom->position * 1/8.0f;
+        result += opposite_top->position * 1/8.0f;
     }
 
     return result;
@@ -69,29 +106,60 @@ void Application::loop_subdivision(SubdivisionTriangleMesh const& src_mesh, Subd
 
     for (Face const& face : src_mesh.faces) {
         std::vector<Vertex*> vertex_rule_vertices, edge_rule_vertices;
+
         {
             // TODO: Compute subdivision vertices using the rules, i.e. methods "vertex_rule" and "edge_rule" above. 
             //       Insert the computed vertices into the builder and also to vectors "vertex_rule_vertices" and "edge_rule_vertices".
+
             // HINTS:
             //  - For each edge and vertex of the face apply "Application::edge_rule" and "Application::vertex_rule" respectively.
             //  - However, be careful not to recompute already computed vertices => use "bld.find_dst_vertex_of" to check whether
             //    the vertex was computed already (otherwise the method returns "nullptr").
-            //
-            //  - Note there are 2 "bld.find_dst_vertex_of" methods: One accepts vertices from the source mesh and the other edges 
+
+            //  - Note there are 2 "bld.find_dst_vertex_of" methods: One accepts vertices from the source mesh and the other edges
             //    from the source mesh.
             //  - For more details look at "SubdivisionTriangleMeshBuilder::find_dst_vertex_of" methods in the Application.hpp file.
-            //
+
             //  - Use methods "bld.insert_vertex" of the builder to insert a new vertex into the destination mesh and simultaneously
             //    to mark the vertex as being computed for the corresponsing source mesh element (vetex or edge).
             //  - Note there are 2 "bld.insert_vertex" methods: One accepts vertices passed to the vertex rule and the other edges
             //    passed to the edge rule.
             //	- For more details look at "SubdivisionTriangleMeshBuilder::insert_vertex" methods in the Application.hpp file.
-            //						
+
             //  - vertex_rule_vertices.push_back(v) - appends the vertex v into the vector vertex_rule_vertices.
             //  - edge_rule_vertices.push_back(v) - appends the vertex v into the vector edge_rule_vertices.
             //
             //  - For the half-edge definition see the Application.hpp file.
+
+            /// Current working edge :)
+            Edge* edge = face.edge;
+
+            for (int i = 0; i < 3; i++) {
+                Vertex* vertex = edge->start;
+
+                auto er_vertex = bld.find_dst_vertex_of(edge);
+                if (er_vertex == nullptr) {
+                    glm::vec3 edge_r = edge_rule(edge);
+                    er_vertex = bld.insert_vertex(edge_r, edge);
+                }
+                edge_rule_vertices.push_back(er_vertex);
+
+
+                auto vr_vertex = bld.find_dst_vertex_of(vertex);
+                if (vr_vertex == nullptr) {
+                    glm::vec3 vertex_r = vertex_rule(vertex);
+                    vr_vertex = bld.insert_vertex(vertex_r, vertex);
+                }
+                vertex_rule_vertices.push_back(vr_vertex);
+
+                /// Move to the next edge
+                edge = edge->next;
+            }
+
+
         }
+
+        // Note: We are inserting 4 triangles, so 4 calls to the method will be made
 
         // TODO: Insert triangles between subdivision vertices obtained above.
         // HINTS:
@@ -99,6 +167,12 @@ void Application::loop_subdivision(SubdivisionTriangleMesh const& src_mesh, Subd
         //  - Call "bld.insert_triangle" to insert a triangle into the builder (i.e. the destination mesh).
         //  - There should be 4 triangles inserted into the builder.
         //	- For the half-edge definition see the Application.hpp file.
+
+        bld.insert_triangle(vertex_rule_vertices[0], edge_rule_vertices[0], edge_rule_vertices[2]);
+        bld.insert_triangle(vertex_rule_vertices[1], edge_rule_vertices[1], edge_rule_vertices[0]);
+        bld.insert_triangle(vertex_rule_vertices[2], edge_rule_vertices[2], edge_rule_vertices[1]);
+
+        bld.insert_triangle(edge_rule_vertices[0], edge_rule_vertices[1], edge_rule_vertices[2]);
     }
 
     bld.finalize();

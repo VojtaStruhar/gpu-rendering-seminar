@@ -655,6 +655,7 @@ void Application::render_with_tone_mapping() {
 
 void Application::blur_highlights_buffer() {
     // TASK 4a: Simple, one pass blurring - the C++ part is already implemented here, see shader.
+
     // Binds the main window framebuffer.
     glBindFramebuffer(GL_FRAMEBUFFER, hrd_blurred_highlights_fbo[0]);
     glViewport(0, 0, width, height);

@@ -69,6 +69,10 @@ layout (location = 0) out vec4 final_color;
 // The highlights.
 layout (location = 1) out vec4 highlight_output;
 
+float color_brightness(vec3 c) {
+	return c.r * 0.299 + c.g * 0.587 + c.b * 0.114;
+}
+
 // ----------------------------------------------------------------------------
 // Main Method
 // ----------------------------------------------------------------------------
@@ -153,6 +157,12 @@ void main()
 	// TASK 3: Write pixels with high brightness to a correct buffer.
 	//   Hint: We are working with HDR buffers, treshold could be simply 1.0.
 	//   Hint: Perceived brightness of pixel == r*0.299 + g*0.587 + b*0.114.
-	
+
 	// highlight_output = ...
+	float b = color_brightness(final_color.rgb);
+	if (b > 1.0f) {
+		highlight_output = vec4(final_light * (b - 1.0f), 1.0f);
+	} else {
+		highlight_output = vec4(vec3(0.0), 1.0f);
+	}
 }

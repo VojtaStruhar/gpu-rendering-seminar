@@ -31,6 +31,18 @@ void main()
 	//          b) Exposure mapping
 	//          c) Exposure mapping with gamma correction
 	//   Hint: Useful functions: exp2, pow.
-	
-	final_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+	vec3 hdrColor = texture(input_tex, in_data.tex_coord).rgb;
+	vec3 result;
+
+	// a)
+//	result = hdrColor / (hdrColor + vec3(1.0f));
+
+	// b)
+	result = vec3(1.0) - exp2(-hdrColor * exposure);
+
+	// c)
+	vec3 mapped = pow(result, vec3(1.0 / gamma));
+
+	final_color = vec4(mapped, 1.0);
 }

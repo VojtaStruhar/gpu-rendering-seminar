@@ -221,10 +221,10 @@ void Application::resize_fullscreen_textures() {
     glTextureStorage2D(bloom_scene_texture, 1, GL_RGBA8, width, height);
 
     // TASK 1: Increase precision of all HDR buffers.
-    glTextureStorage2D(hdr_lit_scene_texture, 1, GL_RGBA8, width, height);
-    glTextureStorage2D(hdr_highlights_texture, 1, GL_RGBA8, width, height);
-    glTextureStorage2D(hdr_blurred_highlights_texture[0], 1, GL_RGBA8, width, height);
-    glTextureStorage2D(hdr_blurred_highlights_texture[1], 1, GL_RGBA8, width, height);
+    glTextureStorage2D(hdr_lit_scene_texture, 1, GL_RGBA16F, width, height);
+    glTextureStorage2D(hdr_highlights_texture, 1, GL_RGBA16F, width, height);
+    glTextureStorage2D(hdr_blurred_highlights_texture[0], 1, GL_RGBA16F, width, height);
+    glTextureStorage2D(hdr_blurred_highlights_texture[1], 1, GL_RGBA16F, width, height);
 
     // Sets the texture parameters.
     TextureUtils::set_texture_2d_parameters(gbuffer_position_ws_texture, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST);

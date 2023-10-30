@@ -674,6 +674,8 @@ void Application::blur_highlights_buffer() {
 
     // TASK 4b: Blur multiple times using two buffers.
     //    Hint: Use HDR_Blurred_Highlights_Texture[0 and 1]
+
+
 }
 
 void Application::render_with_bloom() {

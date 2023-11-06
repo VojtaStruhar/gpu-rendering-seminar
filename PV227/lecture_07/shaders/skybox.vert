@@ -48,13 +48,21 @@ void main()
 	// TASK 1: Modify the typical 'full screen quad/triangle' approach below and compute the correct 3D texture coordinates.
 	//  Hints: The important inversed matrices are: 'projection_inv' and 'view_inv'.
 
+
 	// gl_VertexID holds the index of the vertex that is being processed
 	vec2 tex_coord = tex_coords[gl_VertexID];
 
 	// The position of the vertex in NDC.
-	vec4 pos_cs = vec4(tex_coord * 2.0 - 1.0, 0.0, 1.0);	
-	//out_data.tex_coord = tex_coord; // <- Fix this.
-	
+	vec4 pos_cs = vec4(tex_coord * 2.0 - 1.0, 0.0, 1.0);
+
+	vec4 camera_space = projection_inv * pos_cs;
+	camera_space.w = 0.0;
+	vec4 world_space = view_inv * camera_space;
+
+	out_data.tex_coord = world_space.xyz; // <- Fix this.
+
+
+
 	// We send the position in normalized screen space to the shader.
 	gl_Position = pos_cs;
 }

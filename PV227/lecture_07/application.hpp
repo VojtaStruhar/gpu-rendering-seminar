@@ -136,6 +136,8 @@ protected:
     /** The flag determining if reflections should be used. */
     bool use_reflections = false;
 
+    float reflection_factor = 0.5f;
+
     // ----------------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------------

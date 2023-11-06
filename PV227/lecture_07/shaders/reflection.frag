@@ -57,6 +57,7 @@ layout (std140, binding = 3) uniform PhongMaterialBuffer
 
 // The flag determining whether a texture should be used.
 uniform bool has_texture;
+uniform float reflection_factor;
 // The texture that will be used (if available).
 layout(binding = 0) uniform sampler2D material_diffuse_texture;
 // The texture with the environement map.
@@ -79,7 +80,7 @@ void main()
 	//         normal is in 'N', 
 	//         vector from the fragment position to camera eye is in 'V' (note that this is oposite than you need)
 	//         cubemap is in 'environment_tex'
-	
+
 
 	// Computes the lighting.
 	vec3 N = normalize(in_data.normal_ws);
@@ -89,6 +90,11 @@ void main()
 	vec3 amb = global_ambient_color;
 	vec3 dif = vec3(0.0);
 	vec3 spe = vec3(0.0);
+
+	vec3 R = reflect(-V, N);
+	vec3 env_color = texture(environment_texure, R).rgb;
+	vec3 env_color_mix = mix(vec3(1.0), env_color, 0.5);
+
 
 	// Processes all the lights.
 	for (int i = 0; i < lights_count; i++)
@@ -146,6 +152,8 @@ void main()
 
 	// Computes the final light color.
 	vec3 final_light = mat_ambient * amb + mat_diffuse * dif + material.specular * spe;
+
+	final_light = mix(final_light, env_color_mix, reflection_factor);
 
 	// Outputs the final light color.
 	final_color = vec4(final_light, material.alpha);

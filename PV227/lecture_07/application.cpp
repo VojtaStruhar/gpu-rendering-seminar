@@ -467,6 +467,7 @@ void Application::render_final_scene() {
     if (use_reflections) {
         reflection_program.use();
         reflection_program.uniform("has_texture", true);
+        reflection_program.uniform("reflection_factor", reflection_factor);
         glBindTextureUnit(0, wood_tex);
         glBindTextureUnit(1, reflection_texture);
     } else {
@@ -513,7 +514,7 @@ void Application::render_ui() {
     const float unit = ImGui::GetFontSize();
 
     ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoDecoration);
-    ImGui::SetWindowSize(ImVec2(25 * unit, 10 * unit));
+    ImGui::SetWindowSize(ImVec2(26 * unit, 13 * unit));
     ImGui::SetWindowPos(ImVec2(2 * unit, 2 * unit));
 
     std::string fps_cpu_string = "FPS (CPU): ";
@@ -538,6 +539,9 @@ void Application::render_ui() {
         }
     }
     ImGui::Checkbox("Task 2: Reflections", &use_reflections);
+    if (use_reflections) {
+        ImGui::SliderFloat("Reflection Factor", &reflection_factor, 0.0f, 1.0f);
+    }
     ImGui::Combo("Update Method", &cubemap_update_method, CUBE_MAP_UPDATE_LABELS, IM_ARRAYSIZE(CUBE_MAP_UPDATE_LABELS));
     ImGui::Combo("Central Object", &central_object, CENTRAL_OBJECT_LABELS, IM_ARRAYSIZE(CENTRAL_OBJECT_LABELS));
 

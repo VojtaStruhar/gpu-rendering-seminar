@@ -34,4 +34,6 @@ out VertexData
 void main()
 {
 	// TASK 4: Pass the color and the position in view space into the geometry shader.
+	out_data.color = color;
+	out_data.position_vs = view * position;
 }

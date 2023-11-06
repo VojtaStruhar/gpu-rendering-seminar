@@ -65,4 +65,12 @@ void main()
 	//         Don't forget the EmitVertex() function. Don't forget to transform the position with the projection matrix.
 	//	 Hint: The data from the vertex shader is in in_data. Don't forget it is an array. 
 	//         Also, texture coordinates and offsets of each of the quad vertex is in quad_tex_coords and quad_offsets arrays, in order they should be emitted.
+
+	for (int i = 0; i < 4; i++) {
+		out_data.color = in_data[0].color;
+		out_data.tex_coord = quad_tex_coords[i];
+		gl_Position = projection * (in_data[0].position_vs + quad_offsets[i] * particle_size_vs);
+		EmitVertex();
+	}
+	EndPrimitive();
 }

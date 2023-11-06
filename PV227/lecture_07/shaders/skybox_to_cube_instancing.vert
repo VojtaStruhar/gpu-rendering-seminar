@@ -44,4 +44,11 @@ void main()
 {
 	// TASK 4: Update the algorithm from skybox.vert to utilize matrices from a correct camera and set gl_Layer.
 	//  Hints: gl_InstanceID contains the index of the current primitive in an instanced draw command.
+
+	SingleCameraData camera = cameras[gl_InstanceID];
+	vec4 vertex_position = camera.projection_inv * vec4(tex_coords[gl_VertexID], 1.0, 1.0);
+	gl_Position = vertex_position.xyww;
+	out_data.tex_coord = vertex_position.xyz;
+	gl_Layer = gl_InstanceID;
+
 }

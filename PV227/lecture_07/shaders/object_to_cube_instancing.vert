@@ -57,4 +57,5 @@ void main()
 
 	// TASK 4: Compute gl_Position using matrices from a correct camera and set a different gl_Layer for each instance.
 	//  Hints: gl_InstanceID contains the index of the current primitive in an instanced draw command.
+
 }

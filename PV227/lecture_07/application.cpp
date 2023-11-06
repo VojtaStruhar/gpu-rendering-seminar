@@ -418,6 +418,25 @@ void Application::cube_map_update_separate_faces() {
     //         To bind a UBO call 'ubo_object.bind_buffer_base(binding_point)' - the binding point can be found in the shader.
     //         Use 'render_skybox_and_scene(RENDER_STANDARD, false)' to render the scene.
     //         You may also inspire yourself in the function below where we update all the sides at the same time.
+
+    // solve the task 3 here:
+    for (int face = 0; face < 6; face++) {
+        glBindFramebuffer(GL_FRAMEBUFFER, cubemap_separate_fbo[face]);
+        glViewport(0, 0, cubemap_size, cubemap_size);
+
+        // Clears the frame buffer.
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearDepth(1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        // Sets the data of the camera and the lights.
+        cubemap_separate_camera_data_ubo[face].bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
+        phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
+
+        // Renders the scene.
+        render_skybox_and_scene(RENDER_STANDARD, false);
+    }
 }
 
 void Application::cube_map_update_all_faces_at_once() {

@@ -1,0 +1,92 @@
+#version 450 core
+
+// The size of work group - 256 threads.
+layout (local_size_x = 256) in;
+
+// ----------------------------------------------------------------------------
+// Input Variables
+// ----------------------------------------------------------------------------
+// The shader storage buffer with input positions.
+layout (std430, binding = 0) buffer PositionsInBuffer
+{
+	vec4 particle_positions_read[];
+};
+// The shader storage buffer with velocities.
+layout (std430, binding = 2) buffer VelocitiesBuffer
+{
+	vec4 particle_velocities[];
+};
+
+// The particle count.
+uniform int current_particle_count;
+
+// The input parameters of the simulation.
+uniform float time_delta;
+uniform float acceleration_factor;
+uniform float distance_threshold;
+
+// ----------------------------------------------------------------------------
+// Output Variables
+// ----------------------------------------------------------------------------
+// The shader storage buffer with output positions.
+layout (std430, binding = 1) buffer PositionsOutBuffer
+{
+	vec4 particle_positions_write[];
+};
+
+// ----------------------------------------------------------------------------
+// Shared Variables
+// ----------------------------------------------------------------------------
+// The data shared between threads in work group - loaded positions.
+shared vec3 shared_positions[gl_WorkGroupSize.x];
+
+// ----------------------------------------------------------------------------
+// Main Method
+// ----------------------------------------------------------------------------
+void main()
+{
+	// TASK 3: Copy here the result from nbody.comp, and then extend it with the use of shared memory.
+	//	 Hint: Variables:
+	//			gl_LocalInvocationID.x    .. index of the current thread in its work group (local = references the threads in work group)
+	//			gl_WorkGroupSize.x        .. size of a work group
+	//			shared_positions          .. defined a few lines above, an array with data shared between threads in work group
+	//			barrier()                 .. waits for other threads in work group, see the slides
+
+	// Copy the position of the current thread to shared memory.
+
+	uint i = gl_GlobalInvocationID.x;
+	vec3 position = vec3(particle_positions_read[i]);
+	vec3 velocity = vec3(particle_velocities[i]);
+	vec3 accel = vec3(0.0f);
+
+	for (int first_chunk_position = 0; first_chunk_position < current_particle_count; first_chunk_position += int(gl_WorkGroupSize.x)) {
+		// LOAD DATA TO SHARED MEMORY
+		shared_positions[gl_LocalInvocationID.x] = vec3(particle_positions_read[first_chunk_position + gl_LocalInvocationID.x]);
+
+		barrier();
+
+		// Compute the acceleration change
+		for (int j = 0; j < gl_WorkGroupSize.x; j++) {
+			if (i == j) continue;
+
+			vec3 other_pos = shared_positions[j];
+			vec3 dir = other_pos - position;
+
+			float dist_sq = dot(dir, dir);
+			if (dist_sq > distance_threshold) {
+				accel += normalize(dir) / dist_sq;
+			}
+		}
+
+		barrier(); // WAIT before loading new data to shared memory - in order not to overwrite the one that may still be needed.
+	}
+
+
+	accel *= acceleration_factor;
+
+	vec3 new_position = position + velocity * time_delta + 0.5f * accel * time_delta * time_delta;
+	vec3 new_velocity = velocity + accel * time_delta;
+
+	particle_velocities[i]  = vec4(new_velocity, 1.0f);
+	particle_positions_write[i] = vec4(new_position, 1.0f);
+}

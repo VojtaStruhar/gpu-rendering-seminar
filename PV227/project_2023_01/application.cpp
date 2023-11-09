@@ -23,6 +23,9 @@ Application::~Application() {}
 void Application::compile_shaders() {
     default_unlit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "unlit.frag");
     default_lit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "lit.frag");
+
+    mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
+
     display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert",
                                             lecture_shaders_path / "display_texture.frag");
 //    mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
@@ -197,18 +200,18 @@ void Application::render() {
     glBeginQuery(GL_TIME_ELAPSED, render_time_query);
 
     switch (what_to_display) {
-    case NORMAL_SCENE:
-        display_texture(chair_albedo_texture);
-        break;
-    case MASK_TEXTURE:
-        display_texture(door_albedo_texture);
-        break;
-    case MIRRORED_SCENE:
-        display_texture(swat_head_albedo_texture);
-        break;
-    case FINAL_IMAGE:
-        render_scene(default_lit_program);
-        break;
+        case NORMAL_SCENE:
+            display_texture(chair_albedo_texture);
+            break;
+        case MASK_TEXTURE:
+            display_texture(door_albedo_texture);
+            break;
+        case MIRRORED_SCENE:
+            render_scene(mirrored_lit_program);
+            break;
+        case FINAL_IMAGE:
+            render_scene(default_lit_program);
+            break;
     }
 
     // Resets the VAO and the program.
@@ -238,7 +241,15 @@ void Application::render_scene(const ShaderProgram &program) const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     render_object(floor_object, program);
-    render_object(walls_object, program);
+    if (transparent_walls) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        render_object(walls_object, program);
+        glDisable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+    } else {
+        render_object(walls_object, program);
+    }
     render_object(table_object, program);
     render_object(chair_object, program);
     render_object(window_frame_object, program);

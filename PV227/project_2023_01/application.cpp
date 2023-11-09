@@ -243,10 +243,10 @@ void Application::render_scene(const ShaderProgram &program) const {
     render_object(floor_object, program);
     if (transparent_walls) {
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
         render_object(walls_object, program);
         glDisable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_BACK : GL_FRONT);
     } else {
         render_object(walls_object, program);
     }

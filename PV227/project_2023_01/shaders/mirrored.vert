@@ -36,19 +36,19 @@ out VertexData
 	vec2 tex_coord;		  // The vertex texture coordinates.
 } out_data;
 
-mat4 T = mat4(
-	1.0, 0.0, 0.0, 60.3,  // Column 1
-	0.0, 1.0, 0.0, 0.0,   // Column 2
-	0.0, 0.0, 1.0, 0.0,   // Column 3
-	0.0, 0.0, 0.0, 1.0    // Column 4
-);
-
 
 mat4 F = mat4(
 	-1.0, 0.0, 0.0, 0.0,
 	0.0, 1.0, 0.0, 0.0,
 	0.0, 0.0, 1.0, 0.0,
 	0.0, 0.0, 0.0, 1.0
+);
+
+mat4 T = mat4(
+	1.0, 0.0, 0.0, 0.0,  // Column 1
+	0.0, 1.0, 0.0, 0.0,   // Column 2
+	0.0, 0.0, 1.0, 0.0,   // Column 3
+	-60.3, 0.0, 0.0, 1.0    // Column 4
 );
 
 
@@ -61,7 +61,7 @@ void main()
 	out_data.position_ws = vec3(model * position);
 	out_data.normal_ws = normalize(model_it * normal);
 
-	mat4 mirrored_view_matrix = view * F;
+	mat4 mirrored_view_matrix =  view * inverse(T) * F * T;
 
-	gl_Position = projection * view * model * position;
+	gl_Position = projection * mirrored_view_matrix * model * position;
 }

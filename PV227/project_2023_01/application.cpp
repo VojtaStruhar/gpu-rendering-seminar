@@ -3,7 +3,7 @@
 #include <map>
 
 Application::Application(int initial_width, int initial_height, std::vector<std::string> arguments)
-    : PV227Application(initial_width, initial_height, arguments) {
+        : PV227Application(initial_width, initial_height, arguments) {
     Application::compile_shaders();
     prepare_cameras();
     prepare_materials();
@@ -23,7 +23,10 @@ Application::~Application() {}
 void Application::compile_shaders() {
     default_unlit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "unlit.frag");
     default_lit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "lit.frag");
-    display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert", lecture_shaders_path / "display_texture.frag");
+    display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert",
+                                            lecture_shaders_path / "display_texture.frag");
+//    mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
+
 
     std::cout << "Shaders are reloaded." << std::endl;
 }
@@ -37,7 +40,9 @@ void Application::prepare_cameras() {
 
     // Sets the projection matrix for the normal and mirrored cameras.
     projection_matrix =
-        glm::perspective(glm::radians(45.f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 5000.0f);
+            glm::perspective(glm::radians(45.f), static_cast<float>(this->width) / static_cast<float>(this->height),
+                             0.1f, 5000.0f);
+
 
     camera_ubo.set_projection(projection_matrix);
 }
@@ -49,15 +54,15 @@ void Application::prepare_materials() {
 
 void Application::prepare_textures() {
     vampire_albedo_texture =
-        TextureUtils::load_texture_2d(lecture_textures_path / "low" / "vampire_albedo.png");
+            TextureUtils::load_texture_2d(lecture_textures_path / "low" / "vampire_albedo.png");
     TextureUtils::set_texture_2d_parameters(vampire_albedo_texture, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
     swat_head_albedo_texture =
-        TextureUtils::load_texture_2d(lecture_textures_path / "low" / "swat_head_albedo.png");
+            TextureUtils::load_texture_2d(lecture_textures_path / "low" / "swat_head_albedo.png");
     TextureUtils::set_texture_2d_parameters(vampire_albedo_texture, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
     swat_body_albedo_texture =
-        TextureUtils::load_texture_2d(lecture_textures_path / "low" / "swat_body_albedo.png");
+            TextureUtils::load_texture_2d(lecture_textures_path / "low" / "swat_body_albedo.png");
     TextureUtils::set_texture_2d_parameters(vampire_albedo_texture, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
     walls_albedo_texture = TextureUtils::load_texture_2d(lecture_textures_path / "low" / "walls_albedo.png");
@@ -111,51 +116,63 @@ void Application::prepare_scene() {
     floor_object = SceneObject(cube, floor_model_ubo, gray_material_ubo);
 
     const Geometry vampire = Geometry::from_file(lecture_folder_path / "models/vampire.obj", false);
-    vampire_object = SceneObject(vampire, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    vampire_object = SceneObject(vampire, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                                 white_material_ubo,
                                  vampire_albedo_texture);
 
     const Geometry swat_head = Geometry::from_file(lecture_folder_path / "models/swat_head.obj", false);
-    swat_head_object = SceneObject(swat_head, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    swat_head_object = SceneObject(swat_head, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                                   white_material_ubo,
                                    swat_head_albedo_texture);
 
     const Geometry swat_body = Geometry::from_file(lecture_folder_path / "models/swat_body.obj", false);
-    swat_body_object = SceneObject(swat_body, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    swat_body_object = SceneObject(swat_body, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                                   white_material_ubo,
                                    swat_body_albedo_texture);
 
     const Geometry swat_helmet = Geometry::from_file(lecture_folder_path / "models/swat_helmet.obj", false);
-    swat_helmet_object = SceneObject(swat_helmet, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+    swat_helmet_object = SceneObject(swat_helmet,
+                                     ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
                                      white_material_ubo, swat_body_albedo_texture);
 
     const Geometry walls = Geometry::from_file(lecture_folder_path / "models/walls.obj", false);
-    walls_object = SceneObject(walls, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    walls_object = SceneObject(walls, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                               white_material_ubo,
                                walls_albedo_texture);
 
     const Geometry door = Geometry::from_file(lecture_folder_path / "models/door.obj", false);
-    door_object = SceneObject(door, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    door_object = SceneObject(door, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                              white_material_ubo,
                               door_albedo_texture);
 
     const Geometry table = Geometry::from_file(lecture_folder_path / "models/table.obj", false);
-    table_object = SceneObject(table, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    table_object = SceneObject(table, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                               white_material_ubo,
                                table_albedo_texture);
 
     const Geometry chair = Geometry::from_file(lecture_folder_path / "models/chair.obj", false);
-    chair_object = SceneObject(chair, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    chair_object = SceneObject(chair, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                               white_material_ubo,
                                chair_albedo_texture);
 
     const Geometry mirror_frame = Geometry::from_file(lecture_folder_path / "models/window_frame.obj", false);
-    window_frame_object = SceneObject(mirror_frame, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+    window_frame_object = SceneObject(mirror_frame,
+                                      ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
                                       white_material_ubo, window_albedo_texture);
 
     const Geometry light_1 = Geometry::from_file(lecture_folder_path / "models/light_1.obj", false);
-    light_1_object = SceneObject(light_1, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    light_1_object = SceneObject(light_1, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                                 white_material_ubo,
                                  light_albedo_texture);
 
     const Geometry light_2 = Geometry::from_file(lecture_folder_path / "models/light_2.obj", false);
-    light_2_object = SceneObject(light_2, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    light_2_object = SceneObject(light_2, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                                 white_material_ubo,
                                  light_albedo_texture);
 
     const Geometry glass = Geometry::from_file(lecture_folder_path / "models/glass.obj", false);
-    glass_object = SceneObject(glass, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))), white_material_ubo,
+    glass_object = SceneObject(glass, ModelUBO(glm::translate(glm::mat4(1.0f), glm::vec3(0, floor_offset, 0))),
+                               white_material_ubo,
                                window_albedo_texture);
 }
 
@@ -210,7 +227,7 @@ void Application::render() {
     fps_gpu = 1000.f / (static_cast<float>(render_time) * 1e-6f);
 }
 
-void Application::render_scene(const ShaderProgram& program) const {
+void Application::render_scene(const ShaderProgram &program) const {
 
     camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
     phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
@@ -235,7 +252,7 @@ void Application::render_scene(const ShaderProgram& program) const {
     render_object(glass_object, program);
 }
 
-void Application::render_object(const SceneObject& object, const ShaderProgram& program) const {
+void Application::render_object(const SceneObject &object, const ShaderProgram &program) const {
     program.use();
 
     // Handles the textures.
@@ -274,7 +291,6 @@ void Application::display_texture(GLuint texture) {
 }
 
 
-
 // ----------------------------------------------------------------------------
 // GUI
 // ----------------------------------------------------------------------------
@@ -293,13 +309,13 @@ void Application::render_ui() {
     std::string fps_string = "FPS (GPU): ";
     ImGui::Text(fps_string.append(std::to_string(fps_gpu)).c_str());
 
-    const char* display_labels[4] = {
-        DisplayModeToText(0),
-        DisplayModeToText(1),
-        DisplayModeToText(2),
-        DisplayModeToText(3),
+    const char *display_labels[4] = {
+            DisplayModeToText(0),
+            DisplayModeToText(1),
+            DisplayModeToText(2),
+            DisplayModeToText(3),
     };
-    ImGui::Combo("Display", reinterpret_cast<int*>(&what_to_display), display_labels, IM_ARRAYSIZE(display_labels));
+    ImGui::Combo("Display", reinterpret_cast<int *>(&what_to_display), display_labels, IM_ARRAYSIZE(display_labels));
 
     ImGui::Checkbox("Transparent Walls", &transparent_walls);
 

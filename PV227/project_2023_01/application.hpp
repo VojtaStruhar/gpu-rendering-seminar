@@ -6,22 +6,26 @@
 // ################################################################################
 
 #pragma once
+
 #include "camera_ubo.hpp"
 #include "light_ubo.hpp"
 #include "pv227_application.hpp"
 #include "scene_object.hpp"
 
-enum EDisplayMode : int { NORMAL_SCENE, MIRRORED_SCENE, MASK_TEXTURE, FINAL_IMAGE };
-inline const char* DisplayModeToText(int mode) {
+enum EDisplayMode : int {
+    NORMAL_SCENE, MIRRORED_SCENE, MASK_TEXTURE, FINAL_IMAGE
+};
+
+inline const char *DisplayModeToText(int mode) {
     switch (static_cast<EDisplayMode>(mode)) {
-    case FINAL_IMAGE:
-        return "Final Image";
-    case MASK_TEXTURE:
-        return "Mask Texture";
-    case NORMAL_SCENE:
-        return "Normal Scene Texture";
-    case MIRRORED_SCENE:
-        return "Mirrored Scene";
+        case FINAL_IMAGE:
+            return "Final Image";
+        case MASK_TEXTURE:
+            return "Mask Texture";
+        case NORMAL_SCENE:
+            return "Normal Scene Texture";
+        case MIRRORED_SCENE:
+            return "Mirrored Scene";
     }
     return "";
 }
@@ -30,7 +34,7 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Variables (Geometry)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The scene object representing vampire. */
     SceneObject vampire_object;
     /** The scene object representing SWAT head. */
@@ -65,11 +69,11 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Variables (Materials)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     // ----------------------------------------------------------------------------
     // Variables (Textures)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The albedo texture for SWAT head. */
     GLuint swat_head_albedo_texture;
 
@@ -100,35 +104,37 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Variables (Light)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The UBO storing the data about lights - positions, colors, etc. */
     PhongLightsUBO phong_lights_ubo;
 
     // ----------------------------------------------------------------------------
     // Variables (Camera)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The camera projection matrix. */
     glm::mat4 projection_matrix;
+    glm::mat4 mirrored_projection_matrix;
     /** The UBO storing the information about the camera. */
     CameraUBO camera_ubo;
 
     // ----------------------------------------------------------------------------
     // Variables (Shaders)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The program for rendering textures. */
     ShaderProgram display_texture_program;
+    ShaderProgram mirrored_lit_program;
 
     // ----------------------------------------------------------------------------
     // Variables (Frame Buffers)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
 
     // ----------------------------------------------------------------------------
     // Variables (GUI)
     // ----------------------------------------------------------------------------
-  protected:
+protected:
     /** The flag determining what will be displayed on the screen right now. */
     EDisplayMode what_to_display = FINAL_IMAGE;
     /** The flag determining if the walls shall be transparent. */
@@ -139,7 +145,7 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------------
-  public:
+public:
     Application(int initial_width, int initial_height, std::vector<std::string> arguments = {});
 
     /** Destroys the {@link Application} and releases the allocated resources. */
@@ -156,7 +162,7 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Initialize Scene
     // ----------------------------------------------------------------------------
-  public:
+public:
     /** Prepares the required cameras. */
     void prepare_cameras();
 
@@ -189,16 +195,16 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // Render
     // ----------------------------------------------------------------------------
-  public:
-   
+public:
+
     /** @copydoc PV227Application::render */
     void render() override;
 
     /** Renders the whole scene. */
-    void render_scene(const ShaderProgram& program) const;
+    void render_scene(const ShaderProgram &program) const;
 
     /** Renders one object. */
-    void render_object(const SceneObject& object, const ShaderProgram& program) const;
+    void render_object(const SceneObject &object, const ShaderProgram &program) const;
 
     /** Renders a texture onto screen. */
     void display_texture(GLuint texture);
@@ -206,14 +212,14 @@ class Application : public PV227Application {
     // ----------------------------------------------------------------------------
     // GUI
     // ----------------------------------------------------------------------------
-  public:
+public:
     /** @copydoc PV227Application::render_ui */
     void render_ui() override;
 
     // ----------------------------------------------------------------------------
     // Input Events
     // ----------------------------------------------------------------------------
-  public:
+public:
     /** @copydoc PV227Application::on_resize */
     void on_resize(int width, int height) override;
 

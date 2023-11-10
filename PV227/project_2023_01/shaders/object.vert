@@ -26,6 +26,8 @@ layout (std140, binding = 1) uniform ModelData
 	mat3 model_it;		// The inverse of the transpose of the top-left part 3x3 of the model matrix.
 };
 
+uniform bool is_mirror;
+
 // ----------------------------------------------------------------------------
 // Output Variables
 // ----------------------------------------------------------------------------
@@ -36,6 +38,22 @@ out VertexData
 	vec2 tex_coord;		  // The vertex texture coordinates.
 } out_data;
 
+
+mat4 F = mat4(
+-1.0, 0.0, 0.0, 0.0,
+0.0, 1.0, 0.0, 0.0,
+0.0, 0.0, 1.0, 0.0,
+0.0, 0.0, 0.0, 1.0
+);
+
+mat4 T = mat4(
+1.0, 0.0, 0.0, 0.0,  // Column 1
+0.0, 1.0, 0.0, 0.0,   // Column 2
+0.0, 0.0, 1.0, 0.0,   // Column 3
+-60.3, 0.0, 0.0, 1.0    // Column 4
+);
+
+
 // ----------------------------------------------------------------------------
 // Main Method
 // ----------------------------------------------------------------------------
@@ -45,5 +63,10 @@ void main()
 	out_data.position_ws = vec3(model * position);
 	out_data.normal_ws = normalize(model_it * normal);
 
-	gl_Position = projection * view * model * position;
+	mat4 view_matrix = view;
+	if (is_mirror) {
+		view_matrix = view * inverse(T) * F * T;
+	}
+
+	gl_Position = projection * view_matrix * model * position;
 }

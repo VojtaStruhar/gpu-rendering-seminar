@@ -24,11 +24,8 @@ void Application::compile_shaders() {
     default_unlit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "unlit.frag");
     default_lit_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "lit.frag");
 
-    mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
 
     masking_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "masking.frag");
-    masking_mirrored_program = ShaderProgram(lecture_shaders_path / "mirrored.vert",
-                                             lecture_shaders_path / "masking.frag");
 
     display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert",
                                             lecture_shaders_path / "display_texture.frag");
@@ -210,9 +207,11 @@ void Application::render() {
             display_texture(door_albedo_texture);
             break;
         case MIRRORED_SCENE:
-            render_scene(mirrored_lit_program);
+            default_lit_program.uniform("is_mirror", true);
+            render_scene(default_lit_program);
             break;
         case FINAL_IMAGE:
+            default_lit_program.uniform("is_mirror", false);
             render_scene(default_lit_program);
             break;
     }

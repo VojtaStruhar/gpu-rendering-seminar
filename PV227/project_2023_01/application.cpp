@@ -259,7 +259,8 @@ void Application::render_scene(const ShaderProgram &program) const {
     render_object(swat_body_object, program);
     render_object(swat_head_object, program);
     render_object(swat_helmet_object, program);
-    render_object(vampire_object, program);
+    if (what_to_display != MIRRORED_SCENE)
+        render_object(vampire_object, program);
     render_object(glass_object, program);
 }
 

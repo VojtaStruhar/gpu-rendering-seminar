@@ -105,7 +105,7 @@ void Application::prepare_lights() {
 void Application::prepare_framebuffers() {
     // Creates and binds the required textures.
     resize_fullscreen_textures();
-// Step 1: Create a Framebuffer Object (FBO)
+
     glGenFramebuffers(1, &mask_framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
 
@@ -117,13 +117,10 @@ void Application::prepare_framebuffers() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-// Step 3: Attach the Texture to the FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mask_texture, 0);
 
-// Check if FBO is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-
 
 }
 
@@ -219,20 +216,21 @@ void Application::render() {
     // Starts measuring the elapsed time.
     glBeginQuery(GL_TIME_ELAPSED, render_time_query);
 
+
+    default_lit_program.uniform("is_mirror", what_to_display == MIRRORED_SCENE);
+
     switch (what_to_display) {
         case NORMAL_SCENE:
-            display_texture(chair_albedo_texture);
+            render_scene(default_lit_program);
             break;
         case MASK_TEXTURE:
             render_scene_mask();
             display_texture(mask_texture);
             break;
         case MIRRORED_SCENE:
-            default_lit_program.uniform("is_mirror", true);
             render_scene(default_lit_program);
             break;
         case FINAL_IMAGE:
-            default_lit_program.uniform("is_mirror", false);
             render_scene(default_lit_program);
             break;
     }
@@ -279,14 +277,14 @@ void Application::render_scene(const ShaderProgram &program) const {
     render_object(light_1_object, program);
     render_object(light_2_object, program);
     render_object(door_object, program);
-    render_object(swat_body_object, program);
-    render_object(swat_head_object, program);
-    render_object(swat_helmet_object, program);
-    if (what_to_display != MIRRORED_SCENE)
+    if (what_to_display != MIRRORED_SCENE) {
+        render_object(swat_body_object, program);
+        render_object(swat_head_object, program);
+        render_object(swat_helmet_object, program);
         render_object(vampire_object, program);
+    }
 
-
-//    render_object(glass_object, program);
+    render_object(glass_object, program);
 }
 
 void Application::render_scene_mask() const {
@@ -295,6 +293,7 @@ void Application::render_scene_mask() const {
     camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
     phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
 
+    // Binds the buffer and clears it.
     glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -302,17 +301,18 @@ void Application::render_scene_mask() const {
     auto program = masking_program;
 
 
-    program.uniform("show_in_mask", true);
-    render_object(glass_object, program);
+    program.uniform("write_color", glm::vec3(1.0f, 0.0f, 0.0f));
+    render_object(glass_object, program);  // render the mirror first
 
-    program.uniform("show_in_mask", false);
+    program.uniform("write_color", glm::vec3(0.0f));
 
-    render_object(floor_object, program);
+//    render_object(floor_object, program);  // get outta here
     if (transparent_walls) {
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
         render_object(walls_object, program);
         glDisable(GL_CULL_FACE);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_BACK : GL_FRONT);
     } else {
         render_object(walls_object, program);
     }
@@ -322,10 +322,6 @@ void Application::render_scene_mask() const {
     render_object(light_1_object, program);
     render_object(light_2_object, program);
     render_object(door_object, program);
-    // we dont want the soldier in there
-//    render_object(swat_body_object, program);
-//    render_object(swat_head_object, program);
-//    render_object(swat_helmet_object, program);
 
     render_object(vampire_object, program);
 

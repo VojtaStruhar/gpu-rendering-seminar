@@ -31,12 +31,12 @@ layout(binding = 0) uniform sampler2D material_diffuse_texture;
 // The final output color.
 layout (location = 0) out vec4 final_color;
 
-uniform bool show_in_mask;
+uniform vec3 write_color;
 
 // ----------------------------------------------------------------------------
 // Main Method
 // ----------------------------------------------------------------------------
 void main()
 {
-    final_color = vec4(vec3(show_in_mask ? 1.0 : 0.0), 1.0);
+    final_color = vec4(write_color, 1.0);
 }

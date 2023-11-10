@@ -101,6 +101,9 @@ protected:
     /** The albedo texture for lights. */
     GLuint light_albedo_texture;
 
+    GLuint mask_framebuffer;
+    GLuint mask_texture;
+
     // ----------------------------------------------------------------------------
     // Variables (Light)
     // ----------------------------------------------------------------------------

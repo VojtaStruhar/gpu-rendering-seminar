@@ -105,6 +105,24 @@ void Application::prepare_lights() {
 void Application::prepare_framebuffers() {
     // Creates and binds the required textures.
     resize_fullscreen_textures();
+// Step 1: Create a Framebuffer Object (FBO)
+    glGenFramebuffers(1, &mask_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
+
+    std::cout << "Created FBO: " << mask_framebuffer << std::endl;
+
+    glGenTextures(1, &mask_texture);
+    glBindTexture(GL_TEXTURE_2D, mask_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// Step 3: Attach the Texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mask_texture, 0);
+
+// Check if FBO is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 
 
 }
@@ -207,6 +225,7 @@ void Application::render() {
             break;
         case MASK_TEXTURE:
             render_scene_mask();
+            display_texture(mask_texture);
             break;
         case MIRRORED_SCENE:
             default_lit_program.uniform("is_mirror", true);
@@ -276,22 +295,24 @@ void Application::render_scene_mask() const {
     camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
     phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
 
-    // Binds the buffer and clears it.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto program = masking_program;
+
+
+    program.uniform("show_in_mask", true);
+    render_object(glass_object, program);
 
     program.uniform("show_in_mask", false);
 
     render_object(floor_object, program);
     if (transparent_walls) {
         glEnable(GL_CULL_FACE);
-        glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
+        glCullFace(GL_FRONT);
         render_object(walls_object, program);
         glDisable(GL_CULL_FACE);
-        glCullFace(what_to_display == MIRRORED_SCENE ? GL_BACK : GL_FRONT);
     } else {
         render_object(walls_object, program);
     }
@@ -301,15 +322,13 @@ void Application::render_scene_mask() const {
     render_object(light_1_object, program);
     render_object(light_2_object, program);
     render_object(door_object, program);
-    render_object(swat_body_object, program);
-    render_object(swat_head_object, program);
-    render_object(swat_helmet_object, program);
+    // we dont want the soldier in there
+//    render_object(swat_body_object, program);
+//    render_object(swat_head_object, program);
+//    render_object(swat_helmet_object, program);
 
     render_object(vampire_object, program);
 
-
-    program.uniform("show_in_mask", true);
-    render_object(glass_object, program);
 
 }
 

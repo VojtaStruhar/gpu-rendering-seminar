@@ -398,7 +398,11 @@ void Application::render_ui() {
 
 
     if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
-        what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 4);
+        if (ImGui::GetIO().KeyShift) {
+            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 3) % 4);
+        } else {
+            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 4);
+        }
     }
 
     if (ImGui::IsKeyPressed(ImGuiKey_W)) {

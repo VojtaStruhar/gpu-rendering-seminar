@@ -141,7 +141,7 @@ protected:
     // ----------------------------------------------------------------------------
 protected:
     /** The flag determining what will be displayed on the screen right now. */
-    EDisplayMode what_to_display = FINAL_IMAGE;
+    EDisplayMode what_to_display = NORMAL_SCENE;
     /** The flag determining if the walls shall be transparent. */
     bool transparent_walls = false;
     /** The flag determining if the walls shall be transparent. */

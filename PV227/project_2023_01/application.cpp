@@ -119,6 +119,21 @@ void Application::prepare_framebuffers() {
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mask_texture, 0);
 
+    GLuint depth_texture;
+    glGenTextures(1, &depth_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+
+    // Define the depth texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 width, height, 0, GL_DEPTH_COMPONENT,
+                 GL_UNSIGNED_BYTE, NULL);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                           GL_TEXTURE_2D, depth_texture, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Error: Framebuffer is not complete!" << std::endl;
+
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 
@@ -301,12 +316,9 @@ void Application::render_scene_mask() const {
     auto program = masking_program;
 
 
-    program.uniform("write_color", glm::vec3(1.0f, 0.0f, 0.0f));
-    render_object(glass_object, program);  // render the mirror first
-
     program.uniform("write_color", glm::vec3(0.0f));
 
-//    render_object(floor_object, program);  // get outta here
+    render_object(floor_object, program);  // get outta here
     if (transparent_walls) {
         glEnable(GL_CULL_FACE);
         glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
@@ -325,7 +337,14 @@ void Application::render_scene_mask() const {
 
     render_object(vampire_object, program);
 
+    render_object(swat_body_object, program);
+    render_object(swat_head_object, program);
+    render_object(swat_helmet_object, program);
+    render_object(vampire_object, program);
 
+
+    program.uniform("write_color", glm::vec3(1.0f, 0.0f, 0.0f));
+    render_object(glass_object, program);  // render the mirror first
 }
 
 void Application::render_object(const SceneObject &object, const ShaderProgram &program) const {

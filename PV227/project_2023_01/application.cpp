@@ -105,6 +105,8 @@ void Application::prepare_lights() {
 void Application::prepare_framebuffers() {
     // Creates and binds the required textures.
     resize_fullscreen_textures();
+
+
 }
 
 void Application::resize_fullscreen_textures() {
@@ -204,7 +206,7 @@ void Application::render() {
             display_texture(chair_albedo_texture);
             break;
         case MASK_TEXTURE:
-            display_texture(door_albedo_texture);
+            render_scene_mask();
             break;
         case MIRRORED_SCENE:
             default_lit_program.uniform("is_mirror", true);
@@ -266,6 +268,49 @@ void Application::render_scene(const ShaderProgram &program) const {
 
 
 //    render_object(glass_object, program);
+}
+
+void Application::render_scene_mask() const {
+
+
+    camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
+    phong_lights_ubo.bind_buffer_base(PhongLightsUBO::DEFAULT_LIGHTS_BINDING);
+
+    // Binds the buffer and clears it.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto program = masking_program;
+
+    program.uniform("show_in_mask", false);
+
+    render_object(floor_object, program);
+    if (transparent_walls) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
+        render_object(walls_object, program);
+        glDisable(GL_CULL_FACE);
+        glCullFace(what_to_display == MIRRORED_SCENE ? GL_BACK : GL_FRONT);
+    } else {
+        render_object(walls_object, program);
+    }
+    render_object(table_object, program);
+    render_object(chair_object, program);
+    render_object(window_frame_object, program);
+    render_object(light_1_object, program);
+    render_object(light_2_object, program);
+    render_object(door_object, program);
+    render_object(swat_body_object, program);
+    render_object(swat_head_object, program);
+    render_object(swat_helmet_object, program);
+
+    render_object(vampire_object, program);
+
+
+    program.uniform("show_in_mask", true);
+    render_object(glass_object, program);
+
 }
 
 void Application::render_object(const SceneObject &object, const ShaderProgram &program) const {

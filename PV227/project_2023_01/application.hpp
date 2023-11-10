@@ -205,6 +205,8 @@ public:
     /** Renders the whole scene. */
     void render_scene(const ShaderProgram &program) const;
 
+    void render_scene_mask() const;
+
     /** Renders one object. */
     void render_object(const SceneObject &object, const ShaderProgram &program) const;
 

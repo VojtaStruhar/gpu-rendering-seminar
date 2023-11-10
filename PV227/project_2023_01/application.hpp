@@ -125,6 +125,8 @@ protected:
     /** The program for rendering textures. */
     ShaderProgram display_texture_program;
     ShaderProgram mirrored_lit_program;
+    ShaderProgram masking_program;
+    ShaderProgram masking_mirrored_program;
 
     // ----------------------------------------------------------------------------
     // Variables (Frame Buffers)

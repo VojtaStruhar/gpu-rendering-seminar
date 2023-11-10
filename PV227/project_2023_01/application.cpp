@@ -26,9 +26,12 @@ void Application::compile_shaders() {
 
     mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
 
+    masking_program = ShaderProgram(lecture_shaders_path / "object.vert", lecture_shaders_path / "masking.frag");
+    masking_mirrored_program = ShaderProgram(lecture_shaders_path / "mirrored.vert",
+                                             lecture_shaders_path / "masking.frag");
+
     display_texture_program = ShaderProgram(lecture_shaders_path / "full_screen_quad.vert",
                                             lecture_shaders_path / "display_texture.frag");
-//    mirrored_lit_program = ShaderProgram(lecture_shaders_path / "mirrored.vert", lecture_shaders_path / "lit.frag");
 
 
     std::cout << "Shaders are reloaded." << std::endl;
@@ -261,7 +264,9 @@ void Application::render_scene(const ShaderProgram &program) const {
     render_object(swat_helmet_object, program);
     if (what_to_display != MIRRORED_SCENE)
         render_object(vampire_object, program);
-    render_object(glass_object, program);
+
+
+//    render_object(glass_object, program);
 }
 
 void Application::render_object(const SceneObject &object, const ShaderProgram &program) const {
@@ -327,6 +332,16 @@ void Application::render_ui() {
             DisplayModeToText(2),
             DisplayModeToText(3),
     };
+
+
+    if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
+        what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 4);
+    }
+
+    if (ImGui::IsKeyPressed(ImGuiKey_W)) {
+        transparent_walls = !transparent_walls;
+    }
+
     ImGui::Combo("Display", reinterpret_cast<int *>(&what_to_display), display_labels, IM_ARRAYSIZE(display_labels));
 
     ImGui::Checkbox("Transparent Walls", &transparent_walls);

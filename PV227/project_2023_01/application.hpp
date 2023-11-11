@@ -104,6 +104,12 @@ protected:
     GLuint mask_framebuffer;
     GLuint mask_texture;
 
+    GLuint mirror_framebuffer;
+    GLuint mirror_texture;
+
+    GLuint normal_framebuffer;
+    GLuint normal_texture;
+
     // ----------------------------------------------------------------------------
     // Variables (Light)
     // ----------------------------------------------------------------------------
@@ -129,7 +135,7 @@ protected:
     ShaderProgram display_texture_program;
     ShaderProgram mirrored_lit_program;
     ShaderProgram masking_program;
-    ShaderProgram masking_mirrored_program;
+    ShaderProgram composite_program;
 
     // ----------------------------------------------------------------------------
     // Variables (Frame Buffers)

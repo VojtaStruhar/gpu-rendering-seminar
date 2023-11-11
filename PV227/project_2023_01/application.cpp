@@ -138,18 +138,18 @@ void Application::prepare_framebuffers() {
     }
 
     {
-        glGenFramebuffers(1, &normal_framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, normal_framebuffer);
+        glGenFramebuffers(1, &base_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
 
-        std::cout << "Created FBO: " << normal_framebuffer << std::endl;
+        std::cout << "Created FBO: " << base_framebuffer << std::endl;
 
-        glGenTextures(1, &normal_texture);
-        glBindTexture(GL_TEXTURE_2D, normal_texture);
+        glGenTextures(1, &base_texture);
+        glBindTexture(GL_TEXTURE_2D, base_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normal_texture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, base_texture, 0);
 
         GLuint depth_texture;
         glGenTextures(1, &depth_texture);
@@ -294,10 +294,10 @@ void Application::render() {
 
     switch (what_to_display) {
         case NORMAL_SCENE:
-            glBindFramebuffer(GL_FRAMEBUFFER, normal_framebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
             render_scene(default_lit_program);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            display_texture(normal_texture);
+            display_texture(base_texture);
             break;
         case MASK_TEXTURE:
             glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
@@ -312,8 +312,20 @@ void Application::render() {
             display_texture(mirror_texture);
             break;
         case FINAL_IMAGE:
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
             render_scene(default_lit_program);
+
+            what_to_display = MIRRORED_SCENE;
+            default_lit_program.uniform("is_mirror", true);
+            glBindFramebuffer(GL_FRAMEBUFFER, mirror_framebuffer);
+            render_scene(default_lit_program);
+
+            what_to_display = FINAL_IMAGE;
+            glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
+            render_scene_mask();
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            display_final();
             break;
     }
 
@@ -365,7 +377,7 @@ void Application::render_scene(const ShaderProgram &program) const {
         render_object(vampire_object, program);
     }
 
-    render_object(glass_object, program);
+    // render_object(glass_object, program);
 }
 
 void Application::render_scene_mask() const {
@@ -447,6 +459,29 @@ void Application::display_texture(GLuint texture) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
+
+void Application::display_final() {
+    // Binds the main framebuffer and clears it.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Disables depth test.
+    glDisable(GL_DEPTH_TEST);
+
+    // Uses the proper program.
+    composite_program.use();
+    // Binds the texture.
+    glBindTextureUnit(0, base_texture);
+    glBindTextureUnit(1, mirror_texture);
+    glBindTextureUnit(2, mask_texture);
+
+
+    // Renders the full screen quad to evaluate every pixel.
+    // Binds an empty VAO as we do not need any state.
+    glBindVertexArray(empty_vao);
+    // Calls a draw command with 3 vertices that are generated in vertex shader.
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}
 
 // ----------------------------------------------------------------------------
 // GUI

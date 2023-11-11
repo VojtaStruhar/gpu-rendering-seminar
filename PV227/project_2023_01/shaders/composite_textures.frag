@@ -24,6 +24,15 @@ layout (location = 0) out vec4 final_color;
 // ----------------------------------------------------------------------------
 void main()
 {
-    // We applie the transformation to the color from the texture using the uniform matrix.
-    final_color = texture(normal_tex, in_data.tex_coord).rgba;
+    vec3 mask_color = texture(mask_tex, in_data.tex_coord).rgb;
+
+    if (mask_color.r > 0.5)
+    {
+        final_color = texture(mirrored_tex, in_data.tex_coord);
+    }
+    else
+    {
+        final_color = texture(normal_tex, in_data.tex_coord);
+    }
+
 }

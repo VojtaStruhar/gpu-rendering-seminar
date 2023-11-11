@@ -107,8 +107,8 @@ protected:
     GLuint mirror_framebuffer;
     GLuint mirror_texture;
 
-    GLuint normal_framebuffer;
-    GLuint normal_texture;
+    GLuint base_framebuffer;
+    GLuint base_texture;
 
     // ----------------------------------------------------------------------------
     // Variables (Light)
@@ -222,6 +222,7 @@ public:
     /** Renders a texture onto screen. */
     void display_texture(GLuint texture);
 
+    void display_final();
     // ----------------------------------------------------------------------------
     // GUI
     // ----------------------------------------------------------------------------

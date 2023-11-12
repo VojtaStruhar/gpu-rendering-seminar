@@ -1,0 +1,29 @@
+# 3ds Max Wavefront OBJ Exporter v0.99 - (c)2007 guruware
+# File Created: 20.10.2023 09:43:20
+
+#
+# object Glass
+#
+
+v  61.6667 41.0305 48.8524
+v  61.6667 78.6546 48.8524
+v  61.6666 78.6546 -51.7639
+v  61.6666 41.0305 -51.7639
+# 4 vertices
+
+vn -1.0000 -0.0000 0.0000
+# 1 vertex normals
+
+vt 0.6850 0.0282 0.0000
+vt 0.6850 0.4743 0.0000
+vt 0.0147 0.4743 0.0000
+vt 0.0147 0.0282 0.0000
+# 4 texture coords
+
+o Glass
+g Glass
+s off
+f 1/1/1 2/2/1 3/3/1 
+f 3/3/1 4/4/1 1/1/1 
+# 2 faces
+

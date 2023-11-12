@@ -107,6 +107,7 @@ void Application::prepare_lights() {
 void Application::prepare_framebuffers() {
     // Creates and binds the required textures.
     resize_fullscreen_textures();
+
     {
         glGenFramebuffers(1, &mask_framebuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
@@ -134,7 +135,7 @@ void Application::prepare_framebuffers() {
                                GL_TEXTURE_2D, depth_texture, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cout << "Error: Framebuffer is not complete!" << std::endl;
+            std::cout << "Error: Mask framebuffer is not complete!" << std::endl;
     }
 
     {
@@ -164,7 +165,7 @@ void Application::prepare_framebuffers() {
                                GL_TEXTURE_2D, depth_texture, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cout << "Error: Framebuffer is not complete!" << std::endl;
+            std::cout << "Error: Base framebuffer is not complete!" << std::endl;
     }
     {
         glGenFramebuffers(1, &mirror_framebuffer);
@@ -193,7 +194,7 @@ void Application::prepare_framebuffers() {
                                GL_TEXTURE_2D, depth_texture, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cout << "Error: Framebuffer is not complete!" << std::endl;
+            std::cout << "Error: Mirror framebuffer is not complete!" << std::endl;
     }
     {
         glGenFramebuffers(1, &glass_framebuffer);
@@ -222,7 +223,7 @@ void Application::prepare_framebuffers() {
                                GL_TEXTURE_2D, depth_texture, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cout << "Error: Framebuffer is not complete!" << std::endl;
+            std::cout << "Error: Glass framebuffer is not complete!" << std::endl;
     }
 }
 
@@ -349,23 +350,31 @@ void Application::render() {
             display_texture(glass_texture);
             break;
         case FINAL_IMAGE:
+            /// I didn't put this in a separate method, it's a bit too specific.
+
+            /// Basic view of the scene
             glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
             render_scene(default_lit_program);
 
+            /// Mirrored view of the scene
             what_to_display = MIRRORED_SCENE;
             default_lit_program.uniform("is_mirror", true);
             glBindFramebuffer(GL_FRAMEBUFFER, mirror_framebuffer);
             render_scene(default_lit_program);
 
+
             what_to_display = FINAL_IMAGE;
+            /// The mirror mask
             glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
             render_scene_mask();
 
+            /// Render the glass object separatedly - for outside viewing
             glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
             glEnable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             render_object(glass_object, default_lit_program);
 
+            /// Finally, render the final result to the screen.
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             display_final();
             break;
@@ -387,6 +396,10 @@ void Application::render() {
     fps_gpu = 1000.f / (static_cast<float>(render_time) * 1e-6f);
 }
 
+/**
+ * Basic - renders the scene with currently bound framebuffer. Differentiates between mirrored and "normal" mode.
+ * @param program
+ */
 void Application::render_scene(const ShaderProgram &program) const {
 
     camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
@@ -422,6 +435,11 @@ void Application::render_scene(const ShaderProgram &program) const {
     // render_object(glass_object, program);
 }
 
+/**
+ * Specialized mode to render the mirror mask - the program is hardcoded.
+ *
+ * Writes red color to the "inside" part of the mirror and green to the "outside" part via face culling.
+ */
 void Application::render_scene_mask() const {
     camera_ubo.bind_buffer_base(CameraUBO::DEFAULT_CAMERA_BINDING);
 
@@ -508,7 +526,11 @@ void Application::display_texture(GLuint texture) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-
+/**
+ * Rendering of the final image - take all the separate textures and stitch them together in a fragment shader.
+ * The program is once again hardcoded here and so is the framebuffer. This is not supposed to be rendered anywhere
+ * but the screen.
+ */
 void Application::display_final() {
     // Binds the main framebuffer and clears it.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -559,19 +581,20 @@ void Application::render_ui() {
             DisplayModeToText(4),
     };
 
+    /** Improving the controls. Press W to toggle of Wall visibility. Move viewing modes with tab / shift tab. */
+    {
+        if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
+            if (ImGui::GetIO().KeyShift) {
+                what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 4) % 5);
+            } else {
+                what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 5);
+            }
+        }
 
-    if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
-        if (ImGui::GetIO().KeyShift) {
-            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 4) % 5);
-        } else {
-            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 5);
+        if (ImGui::IsKeyPressed(ImGuiKey_W)) {
+            transparent_walls = !transparent_walls;
         }
     }
-
-    if (ImGui::IsKeyPressed(ImGuiKey_W)) {
-        transparent_walls = !transparent_walls;
-    }
-
     ImGui::Combo("Display", reinterpret_cast<int *>(&what_to_display), display_labels, IM_ARRAYSIZE(display_labels));
 
     ImGui::Checkbox("Transparent Walls", &transparent_walls);

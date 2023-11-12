@@ -29,12 +29,13 @@ void main()
 
     final_color = texture(normal_tex, in_data.tex_coord);
 
-
+    /// Red channel is for the inside of the glass - for the mirroring part
     if (mask_color.r > 0.5)
     {
         final_color = texture(mirrored_tex, in_data.tex_coord);
     }
 
+    /// Green channel means the outside view - half transparent glass object / texture
     if (mask_color.g > 0.5)
     {
         final_color = vec4(mix(final_color.rgb, texture(glass_tex, in_data.tex_coord).rgb, 0.5), final_color.a);

@@ -39,6 +39,7 @@ out VertexData
 } out_data;
 
 
+/// The "F"lip matrix :)
 mat4 F = mat4(
 	-1.0, 0.0, 0.0, 0.0,
 	0.0, 1.0, 0.0, 0.0,
@@ -46,6 +47,7 @@ mat4 F = mat4(
 	0.0, 0.0, 0.0, 1.0
 );
 
+/// Transform matrix. I forgot shaders are column-major and it gave me pain.
 mat4 T = mat4(
 	1.0, 0.0, 0.0, 0.0,  // Column 1
 	0.0, 1.0, 0.0, 0.0,   // Column 2

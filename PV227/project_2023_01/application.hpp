@@ -13,7 +13,7 @@
 #include "scene_object.hpp"
 
 enum EDisplayMode : int {
-    NORMAL_SCENE, MIRRORED_SCENE, MASK_TEXTURE, FINAL_IMAGE
+    NORMAL_SCENE, MIRRORED_SCENE, MASK_TEXTURE, GLASS_TEXTURE, FINAL_IMAGE
 };
 
 inline const char *DisplayModeToText(int mode) {
@@ -26,6 +26,8 @@ inline const char *DisplayModeToText(int mode) {
             return "Normal Scene Texture";
         case MIRRORED_SCENE:
             return "Mirrored Scene";
+        case GLASS_TEXTURE:
+            return "Glass Texture";
     }
     return "";
 }
@@ -106,6 +108,9 @@ protected:
 
     GLuint mirror_framebuffer;
     GLuint mirror_texture;
+
+    GLuint glass_framebuffer;
+    GLuint glass_texture;
 
     GLuint base_framebuffer;
     GLuint base_texture;

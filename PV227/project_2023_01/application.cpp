@@ -195,6 +195,35 @@ void Application::prepare_framebuffers() {
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Framebuffer is not complete!" << std::endl;
     }
+    {
+        glGenFramebuffers(1, &glass_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
+
+        std::cout << "Created FBO: " << glass_framebuffer << std::endl;
+
+        glGenTextures(1, &glass_texture);
+        glBindTexture(GL_TEXTURE_2D, glass_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glass_texture, 0);
+
+        GLuint depth_texture;
+        glGenTextures(1, &depth_texture);
+        glBindTexture(GL_TEXTURE_2D, depth_texture);
+
+        // Define the depth texture data
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                     width, height, 0, GL_DEPTH_COMPONENT,
+                     GL_UNSIGNED_BYTE, NULL);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               GL_TEXTURE_2D, depth_texture, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "Error: Framebuffer is not complete!" << std::endl;
+    }
 }
 
 void Application::resize_fullscreen_textures() {
@@ -311,6 +340,14 @@ void Application::render() {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             display_texture(mirror_texture);
             break;
+        case GLASS_TEXTURE:
+            glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
+            glEnable(GL_DEPTH_TEST);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            render_object(glass_object, default_lit_program);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            display_texture(glass_texture);
+            break;
         case FINAL_IMAGE:
             glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
             render_scene(default_lit_program);
@@ -323,6 +360,11 @@ void Application::render() {
             what_to_display = FINAL_IMAGE;
             glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
             render_scene_mask();
+
+            glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
+            glEnable(GL_DEPTH_TEST);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            render_object(glass_object, default_lit_program);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             display_final();
@@ -481,6 +523,7 @@ void Application::display_final() {
     glBindTextureUnit(0, base_texture);
     glBindTextureUnit(1, mirror_texture);
     glBindTextureUnit(2, mask_texture);
+    glBindTextureUnit(3, glass_texture);
 
 
     // Renders the full screen quad to evaluate every pixel.
@@ -508,19 +551,20 @@ void Application::render_ui() {
     std::string fps_string = "FPS (GPU): ";
     ImGui::Text(fps_string.append(std::to_string(fps_gpu)).c_str());
 
-    const char *display_labels[4] = {
+    const char *display_labels[5] = {
             DisplayModeToText(0),
             DisplayModeToText(1),
             DisplayModeToText(2),
             DisplayModeToText(3),
+            DisplayModeToText(4),
     };
 
 
     if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
         if (ImGui::GetIO().KeyShift) {
-            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 3) % 4);
+            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 4) % 5);
         } else {
-            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 4);
+            what_to_display = static_cast<EDisplayMode>((static_cast<int>(what_to_display) + 1) % 5);
         }
     }
 

@@ -417,8 +417,15 @@ void Application::render_scene_mask() const {
     render_object(vampire_object, program);
 
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(what_to_display == MIRRORED_SCENE ? GL_FRONT : GL_BACK);
     program.uniform("write_color", glm::vec3(1.0f, 0.0f, 0.0f));
-    render_object(glass_object, program);  // render the mirror first
+    render_object(glass_object, program);
+    glCullFace(what_to_display == MIRRORED_SCENE ? GL_BACK : GL_FRONT);
+    program.uniform("write_color", glm::vec3(0.0f, 1.0f, 0.0f));
+    render_object(glass_object, program);
+    glDisable(GL_CULL_FACE);
+
 }
 
 void Application::render_object(const SceneObject &object, const ShaderProgram &program) const {

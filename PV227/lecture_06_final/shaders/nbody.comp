@@ -1,0 +1,89 @@
+#version 450 core
+
+// The size of work group - 256 threads.
+layout (local_size_x = 256) in;
+
+// ----------------------------------------------------------------------------
+// Input Variables
+// ----------------------------------------------------------------------------
+// The shader storage buffer with input positions.
+layout (std430, binding = 0) buffer PositionsInBuffer
+{
+	vec4 particle_positions_read[];
+};
+// The shader storage buffer with velocities.
+layout (std430, binding = 2) buffer VelocitiesBuffer
+{
+	vec4 particle_velocities[];
+};
+
+// The particle count.
+uniform int current_particle_count;
+
+// The input parameters of the simulation.
+uniform float time_delta;
+uniform float acceleration_factor;
+uniform float distance_threshold;
+
+// ----------------------------------------------------------------------------
+// Output Variables
+// ----------------------------------------------------------------------------
+// The shader storage buffer with output positions.
+layout (std430, binding = 1) buffer PositionsOutBuffer
+{
+	vec4 particle_positions_write[];
+};
+
+// ----------------------------------------------------------------------------
+// Main Method
+// ----------------------------------------------------------------------------
+void main()
+{
+	// TASK 2: Implement n-body simulation on GPU. Each particle is computed by a separate thread.
+	//	 Hint: Variables:
+	//			particle_positions_read   .. array of vec4, positions of particles to read from
+	//			particle_positions_write  .. array of vec4, positions of particles to write into
+	//			particle_velocities       .. array of vec4, velocities of particles to read from and to write into
+	//			current_particle_count    .. integer, number of active particles in simulation
+	//			distance_threshold        .. float, objects closer than this value exert no force to each other
+	//			acceleration_factor       .. float, a constant that affects the final acceleration
+	//			time_delta                .. float, time elapsed since the last frame of our simulation
+	//			gl_GlobalInvocationID.x   .. integer, index of the current thread (global = references all running threads)
+
+	// Reads the initial position and velocity of the particle.
+	vec3 position = vec3(particle_positions_read[gl_GlobalInvocationID.x]);
+	vec3 velocity = vec3(particle_velocities[gl_GlobalInvocationID.x]);
+
+	// Computes the acceleration of the particle. We simulate the gravitation force between all particles.
+    // We compute a vector from this particle to each other particle, and if it is further than some distance
+    // threshold (to avoid division by zero), we compute a force that attracts the particle. 
+    // The force fades with the square of the distance, as in real world.
+	vec3 acceleration = vec3(0.0);
+	for (int p = 0; p < current_particle_count; p++)
+	{
+		// Obtains position of the other particle.
+		vec3 other = vec3(particle_positions_read[p]);
+		// Computes vector between these two particles.
+		vec3 direction = other - position;
+		// Computes square of the distance between these particles.
+		float dist_sq = dot(direction, direction);
+		if (dist_sq > distance_threshold)
+		{
+			// Adds the force to acceleration. 
+            // We must normalize the 'diff' to get the direction, and fade it with the square of the distance (division by 'dist_sq').
+			acceleration += normalize(direction) / dist_sq;
+		}
+	}
+
+	// We multiply the acceleration with some constant. 
+    // The constant contains all physics stuff like the mass of particles, gravitational constants, etc.
+    acceleration *= acceleration_factor;
+	// Updates the position and the velocity.
+    position += velocity * time_delta + 0.5f * acceleration * time_delta * time_delta;
+    velocity += acceleration * time_delta;
+
+	// Stores the result. 
+    // Note that we must store the positions into a different buffer than we read it from, because we need the initial values for simulation of other particles.
+	particle_positions_write[gl_GlobalInvocationID.x] = vec4(position, 1.0);
+	particle_velocities[gl_GlobalInvocationID.x] = vec4(velocity, 0.0);
+}

@@ -98,9 +98,27 @@ void main()
 	// TASK 3: Evaluate the tangent and bitangent of the vertex in the Bezier patch.
 	//         Store the result into out_data.tangent_ws/bitangent_ws.
 	//   Hint: Use the same functions as for the position.
+	out_data.tangent_ws = bezier4x4(
+		in_data[0].tangent_ws, in_data[1].tangent_ws, in_data[2].tangent_ws, in_data[3].tangent_ws,
+		in_data[4].tangent_ws, in_data[5].tangent_ws, in_data[6].tangent_ws, in_data[7].tangent_ws,
+		in_data[8].tangent_ws, in_data[9].tangent_ws, in_data[10].tangent_ws, in_data[11].tangent_ws,
+		in_data[12].tangent_ws, in_data[13].tangent_ws, in_data[14].tangent_ws, in_data[15].tangent_ws,
+		gl_TessCoord.xy);
+	out_data.tangent_ws = normalize(out_data.tangent_ws);
+
+
+	out_data.bitangent_ws = bezier4x4(
+	in_data[0].bitangent_ws, in_data[1].bitangent_ws, in_data[2].bitangent_ws, in_data[3].bitangent_ws,
+	in_data[4].bitangent_ws, in_data[5].bitangent_ws, in_data[6].bitangent_ws, in_data[7].bitangent_ws,
+	in_data[8].bitangent_ws, in_data[9].bitangent_ws, in_data[10].bitangent_ws, in_data[11].bitangent_ws,
+	in_data[12].bitangent_ws, in_data[13].bitangent_ws, in_data[14].bitangent_ws, in_data[15].bitangent_ws,
+	gl_TessCoord.xy);
+	out_data.bitangent_ws = normalize(out_data.bitangent_ws);
 
 	// TASK 3: Compute the normal as the cross product of the tangent and bitangent, and normalize it.
 	//         Store the result into out_data.normal_ws.
+	out_data.normal_ws = normalize(cross(out_data.tangent_ws, out_data.bitangent_ws));
+
 
 	if (use_displacement_mapping)
 	{

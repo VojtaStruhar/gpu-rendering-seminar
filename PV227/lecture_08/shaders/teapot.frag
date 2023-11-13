@@ -85,8 +85,8 @@ void main()
 //	return;
  
 	// TASK 2: Comment the code above -> instead of returning a single color we now return the color of the texture, still without lighting (this is also already implemented below).
-	final_color = vec4(texture(material_diffuse_texture, in_data.tex_coord).rgb, 1.0);
-	return;
+//	final_color = vec4(texture(material_diffuse_texture, in_data.tex_coord).rgb, 1.0);
+//	return;
 
 	// TASK 3: Comment the lines above again. The code below computes the lighting (we may use it now because we have the normals).
 

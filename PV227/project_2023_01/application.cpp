@@ -106,7 +106,6 @@ void Application::prepare_lights() {
 
 void Application::prepare_framebuffers() {
     // Creates and binds the required textures.
-    resize_fullscreen_textures();
 
     {
         glGenFramebuffers(1, &mask_framebuffer);
@@ -122,9 +121,8 @@ void Application::prepare_framebuffers() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mask_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &mask_depth);
+        glBindTexture(GL_TEXTURE_2D, mask_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -132,7 +130,7 @@ void Application::prepare_framebuffers() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, mask_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Mask framebuffer is not complete!" << std::endl;
@@ -152,9 +150,8 @@ void Application::prepare_framebuffers() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, base_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &base_depth);
+        glBindTexture(GL_TEXTURE_2D, base_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -162,7 +159,7 @@ void Application::prepare_framebuffers() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, base_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Base framebuffer is not complete!" << std::endl;
@@ -181,9 +178,8 @@ void Application::prepare_framebuffers() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mirror_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &mirror_depth);
+        glBindTexture(GL_TEXTURE_2D, mirror_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -191,7 +187,7 @@ void Application::prepare_framebuffers() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, mirror_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Mirror framebuffer is not complete!" << std::endl;
@@ -210,9 +206,8 @@ void Application::prepare_framebuffers() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glass_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &glass_depth);
+        glBindTexture(GL_TEXTURE_2D, glass_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -220,22 +215,24 @@ void Application::prepare_framebuffers() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, glass_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Glass framebuffer is not complete!" << std::endl;
     }
+
+    resize_fullscreen_textures();
+
 }
 
 void Application::resize_fullscreen_textures() {
     glViewport(0, 0, width, height);
 
-
     {
-        glGenFramebuffers(1, &mask_framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
+        glDeleteTextures(1, &mask_texture);
+        glDeleteTextures(1, &mask_depth);
 
-        std::cout << "Created FBO: " << mask_framebuffer << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, mask_framebuffer);
 
         glGenTextures(1, &mask_texture);
         glBindTexture(GL_TEXTURE_2D, mask_texture);
@@ -245,9 +242,8 @@ void Application::resize_fullscreen_textures() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mask_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &mask_depth);
+        glBindTexture(GL_TEXTURE_2D, mask_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -255,17 +251,17 @@ void Application::resize_fullscreen_textures() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, mask_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Mask framebuffer is not complete!" << std::endl;
     }
 
     {
-        glGenFramebuffers(1, &base_framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
+        glDeleteTextures(1, &base_texture);
+        glDeleteTextures(1, &base_depth);
 
-        std::cout << "Created FBO: " << base_framebuffer << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
 
         glGenTextures(1, &base_texture);
         glBindTexture(GL_TEXTURE_2D, base_texture);
@@ -275,9 +271,8 @@ void Application::resize_fullscreen_textures() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, base_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &base_depth);
+        glBindTexture(GL_TEXTURE_2D, base_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -285,16 +280,16 @@ void Application::resize_fullscreen_textures() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, base_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Base framebuffer is not complete!" << std::endl;
     }
     {
-        glGenFramebuffers(1, &mirror_framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mirror_framebuffer);
+        glDeleteTextures(1, &mirror_texture);
+        glDeleteTextures(1, &mirror_depth);
 
-        std::cout << "Created FBO: " << mirror_framebuffer << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, mirror_framebuffer);
 
         glGenTextures(1, &mirror_texture);
         glBindTexture(GL_TEXTURE_2D, mirror_texture);
@@ -304,9 +299,8 @@ void Application::resize_fullscreen_textures() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mirror_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &mirror_depth);
+        glBindTexture(GL_TEXTURE_2D, mirror_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -314,16 +308,16 @@ void Application::resize_fullscreen_textures() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, mirror_depth, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Error: Mirror framebuffer is not complete!" << std::endl;
     }
     {
-        glGenFramebuffers(1, &glass_framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
+        glDeleteTextures(1, &glass_texture);
+        glDeleteTextures(1, &glass_depth);
 
-        std::cout << "Created FBO: " << glass_framebuffer << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, glass_framebuffer);
 
         glGenTextures(1, &glass_texture);
         glBindTexture(GL_TEXTURE_2D, glass_texture);
@@ -333,9 +327,8 @@ void Application::resize_fullscreen_textures() {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glass_texture, 0);
 
-        GLuint depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glGenTextures(1, &glass_depth);
+        glBindTexture(GL_TEXTURE_2D, glass_depth);
 
         // Define the depth texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -343,7 +336,7 @@ void Application::resize_fullscreen_textures() {
                      GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               GL_TEXTURE_2D, depth_texture, 0);
+                               GL_TEXTURE_2D, glass_depth, 0);
 
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)

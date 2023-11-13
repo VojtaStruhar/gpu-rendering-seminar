@@ -105,15 +105,19 @@ protected:
 
     GLuint mask_framebuffer;
     GLuint mask_texture;
+    GLuint mask_depth;
 
     GLuint mirror_framebuffer;
     GLuint mirror_texture;
+    GLuint mirror_depth;
 
     GLuint glass_framebuffer;
     GLuint glass_texture;
+    GLuint glass_depth;
 
     GLuint base_framebuffer;
     GLuint base_texture;
+    GLuint base_depth;
 
     // ----------------------------------------------------------------------------
     // Variables (Light)

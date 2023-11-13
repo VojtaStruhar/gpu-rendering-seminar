@@ -100,6 +100,9 @@ void main()
 		// TASK 6: Implement normal mapping. 
 		//   Hint: The normal in tangent space is already sampled from the texture above and scaled according to the normal_factor, so just transform it into world space and store it into 'N'.
 		//	       Use tangent_ws, bitangent_ws, and normal_ws from in_data.
+
+		vec3 normal_world_space = in_data.tangent_ws * normal_from_texture.x + in_data.bitangent_ws * normal_from_texture.y + N * normal_from_texture.z;
+		N = normalize(normal_world_space);
 	}
 	vec3 V = normalize(eye_position - in_data.position_ws);
 	

@@ -57,6 +57,12 @@ void main()
 	// TASK 4: Compute the position of the control point in the screen space, and store it into shared 'position_ss' array.
 	//   Hint: Store the result into position_ss[gl_InvocationID], don't forget to call barrier().
 
+//	vec4 pos_camera_space = projection * view * in_data[gl_InvocationID].position_ws;
+	// Window size scaled by 1/2, because its in the range from -1 to 1 now. We are only interested in the ratio of the values.
+	// We could also use the traditional transform (used with NDC) to shift the values to [0, 1] range, but this is actually enough.
+//	position_ss[gl_InvocationID] = window_size * 0.5 * (pos_camera_space.xy / pos_camera_space.w);
+//	barrier();
+
 	// Computes the tessellation factor.
 	if (gl_InvocationID == 0)
 	{
@@ -64,6 +70,7 @@ void main()
 		{
 			// TASK 4: Compute the tessellation factors based on the triangle size.
 			//   Hint: You can use function 'length'.
+
 		}
 		else
 		{

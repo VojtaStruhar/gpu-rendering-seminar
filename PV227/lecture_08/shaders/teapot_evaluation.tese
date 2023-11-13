@@ -52,7 +52,9 @@ vec3 bezier4(in vec3 v0, in vec3 v1, in vec3 v2, in vec3 v3, in float t)
 {
 	// TASK 1: Evaluate cubic bezier spline.
 	//   Hint: Precompute (1-t) and store it into a variable for optimization and better readability.
-	return v1;
+	float tm1 = 1 - t;
+
+	return v0 * tm1 *tm1*tm1 + 3*v1*tm1*tm1*t + 3*v2*tm1*t*t + v3 * t*t*t;
 }
 
 // Evaluates cubic bezier patch.
@@ -65,7 +67,12 @@ vec3 bezier4x4(
 	// TASK 1: Evaluate cubic bezier patch.
 	//   Hint: Use bezier4 function defined above.
 	//         Use t.x and t.y.
-	return v1;
+	vec3 r0 = bezier4(v0, v1, v2, v3, t.x);
+	vec3 r1 = bezier4(v4, v5, v6, v7, t.x);
+	vec3 r2 = bezier4(v8, v9, v10, v11, t.x);
+	vec3 r3 = bezier4(v12, v13, v14, v15, t.x);
+
+	return bezier4(r0, r1, r2, r3, t.y);
 }
 
 // ----------------------------------------------------------------------------
@@ -77,10 +84,16 @@ void main()
 	//		   Store the result into out_data.position_ws
 	//   Hint: First implement functions bezier4 and bezier4x4 above. 
 	//         Patch coordinates are in gl_TessCoord.xy.
-	out_data.position_ws = vec3(0.0);
+	out_data.position_ws = bezier4x4(
+		in_data[0].position_ws, in_data[1].position_ws, in_data[2].position_ws, in_data[3].position_ws,
+		in_data[4].position_ws, in_data[5].position_ws, in_data[6].position_ws, in_data[7].position_ws,
+		in_data[8].position_ws, in_data[9].position_ws, in_data[10].position_ws, in_data[11].position_ws,
+		in_data[12].position_ws, in_data[13].position_ws, in_data[14].position_ws, in_data[15].position_ws,
+		gl_TessCoord.xy);
 
 	// TASK 2: Compute the texture coordinates, use the patch coordinates as texture coordinates.
 	//         Store the result into out_data.tex_coord.
+	out_data.tex_coord = gl_TessCoord.xy;
 
 	// TASK 3: Evaluate the tangent and bitangent of the vertex in the Bezier patch.
 	//         Store the result into out_data.tangent_ws/bitangent_ws.

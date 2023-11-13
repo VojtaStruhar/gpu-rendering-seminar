@@ -81,8 +81,8 @@ layout (location = 0) out vec4 final_color;
 void main()
 {
 	// TASK 1: Already done, the following code outputs white color only.
-	final_color = vec4(1.0);
-	return;
+//	final_color = vec4(1.0);
+//	return;
  
 	// TASK 2: Comment the code above -> instead of returning a single color we now return the color of the texture, still without lighting (this is also already implemented below).
 	final_color = vec4(texture(material_diffuse_texture, in_data.tex_coord).rgb, 1.0);

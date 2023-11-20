@@ -126,6 +126,8 @@ void main()
 		//   Hint: Functions: textureLod
 		//         texture is stored in 'height_tex'
 		//         constant 'displacement_factor' defines a requested multiplier for the height of the displacement
+		float height = textureLod(height_tex, out_data.tex_coord, 0).r;
+		out_data.position_ws += out_data.normal_ws * height * displacement_factor;
 	}
 
 	// Computes gl_Position.

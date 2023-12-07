@@ -143,8 +143,26 @@ float Application::smooth_step(float t) {
 //        info.noise_frequency,     -> initial frequency for the composed octaves (by default 1)
 //        info.start_amplitude      -> initial amplitude for the composed octaves (by default 1)
 float Application::fractalsum(glm::vec3 const &pos, SpectralSystesisInfo const &info) {
-    // TODO: Implement this function.
-    return 0.0f; // This is not a correct solution.
+    float total = 0.0f;
+    float frequency = info.noise_frequency;
+    float amplitude = info.start_amplitude;
+
+    // Determine the maximum frequency based on Nyquist theorem
+    float maxFrequency = 0.5f * info.sampling_frequency;
+
+    while (frequency <= maxFrequency) {
+        // Scale the position by the current frequency
+        glm::vec3 posScaled = pos * frequency;
+
+        // Accumulate the noise
+        total += perlin_noise_improved(posScaled) * amplitude;
+
+        // Update frequency and amplitude for the next octave
+        frequency *= info.frequency_multiplier;
+        amplitude *= info.amplitude_multiplier;
+    }
+
+    return total;
 }
 
 

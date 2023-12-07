@@ -8,8 +8,8 @@
 ################################################################################
 
 # Adds the available project skeletons.
-
-#visitlab_add_directory(butterfly_subdivision)
-#visitlab_add_directory(bvh)
-#visitlab_add_directory(loop_subdivision)
-#visitlab_add_directory(perlin_noise)
+visitlab_add_directory(butterfly_subdivision)
+visitlab_add_directory(bvh)
+visitlab_add_directory(loop_subdivision)
+visitlab_add_directory(perlin_noise)
+visitlab_add_directory(terrain_generation)

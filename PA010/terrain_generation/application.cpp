@@ -147,17 +147,13 @@ float Application::fractalsum(glm::vec3 const &pos, SpectralSystesisInfo const &
     float frequency = info.noise_frequency;
     float amplitude = info.start_amplitude;
 
-    // Determine the maximum frequency based on Nyquist theorem
     float maxFrequency = 0.5f * info.sampling_frequency;
 
     while (frequency <= maxFrequency) {
-        // Scale the position by the current frequency
         glm::vec3 posScaled = pos * frequency;
 
-        // Accumulate the noise
         total += perlin_noise_improved(posScaled) * amplitude;
 
-        // Update frequency and amplitude for the next octave
         frequency *= info.frequency_multiplier;
         amplitude *= info.amplitude_multiplier;
     }
@@ -179,8 +175,23 @@ float Application::fractalsum(glm::vec3 const &pos, SpectralSystesisInfo const &
 // - std::fabs(x) or std::fabsf(x) -> These functions accepts double or float number "x" and returns its absolute value.
 // - WARNING std::abs(x) requires integer and will thus not work correctly.
 float Application::turbulence(glm::vec3 const &pos, SpectralSystesisInfo const &info) {
-    // TODO: Implement this function.
-    return 0.0f; // This is not a correct solution.
+    float total = 0.0f;
+    float frequency = info.noise_frequency;
+    float amplitude = info.start_amplitude;
+
+    float maxFrequency = 0.5f * info.sampling_frequency;
+
+    while (frequency <= maxFrequency) {
+        glm::vec3 posScaled = pos * frequency;
+
+        // Same as fractal sum, but with ABSOLUTE VALUE HERE
+        total += std::fabs(perlin_noise_improved(posScaled)) * amplitude;
+
+        frequency *= info.frequency_multiplier;
+        amplitude *= info.amplitude_multiplier;
+    }
+
+    return total;
 }
 
 
@@ -197,6 +208,8 @@ float Application::turbulence(glm::vec3 const &pos, SpectralSystesisInfo const &
 //        info.arg0                 -> the alpha value from slides (by default 10)
 // - std::sin(x) or std:sinf(x) -> These functions accepts double or float number "x" representing an angle in radians and returns its sinus.
 float Application::marble(glm::vec3 const &pos, SpectralSystesisInfo const &info) {
-    // TODO: Implement this function.
-    return 0.0f; // This is not a correct solution.
+    // In the slides, the marble formula contains the fractal sum formula, so I'll just use that.
+    float fs = fractalsum(pos, info);
+    float marble_value = std::sin(info.arg0 * (pos.x + fs));
+    return marble_value;
 }

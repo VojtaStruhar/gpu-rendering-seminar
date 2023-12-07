@@ -14,7 +14,7 @@ class Application : public OpenGLApplication {
     // The assignment
     // ----------------------------------------------------------------------------
 
-  public:
+public:
     // Holds configuration of a spectral synthesis noise functions: fractal sum, turbulence, marble.
     struct SpectralSystesisInfo {
         SpectralSystesisInfo();
@@ -53,19 +53,22 @@ class Application : public OpenGLApplication {
 
     // Implementation of the "3D Perlin Noise Improved" noise function.
     static float perlin_noise_improved(glm::vec3 pos);
+
     // Implementation of the "Fractal sum" noise function.
-    static float fractalsum(glm::vec3 const& pos, SpectralSystesisInfo const& info);
+    static float fractalsum(glm::vec3 const &pos, SpectralSystesisInfo const &info);
+
     // Implementation of the "Turbulence" noise function.
-    static float turbulence(glm::vec3 const& pos, SpectralSystesisInfo const& info);
+    static float turbulence(glm::vec3 const &pos, SpectralSystesisInfo const &info);
+
     // Implementation of the "Marble" noise function.
-    static float marble(glm::vec3 const& pos, SpectralSystesisInfo const& info);
+    static float marble(glm::vec3 const &pos, SpectralSystesisInfo const &info);
 
     // ----------------------------------------------------------------------------
     // Implementation details - Not necessary for understanding and completing the assignment.
     // ----------------------------------------------------------------------------
 
-  public:
-    using noise_function_type = std::function<float(glm::vec3 const&, SpectralSystesisInfo const&)>;
+public:
+    using noise_function_type = std::function<float(glm::vec3 const &, SpectralSystesisInfo const &)>;
 
     Application(int initial_width, int initial_height, std::vector<std::string> arguments);
 
@@ -93,7 +96,7 @@ class Application : public OpenGLApplication {
 
     void render_ui() override;
 
-    static GLuint make_noise_texture(SpectralSystesisInfo const& info, noise_function_type const& content_generator);
+    static GLuint make_noise_texture(SpectralSystesisInfo const &info, noise_function_type const &content_generator);
 
     static std::map<std::string, noise_function_type> const noise_functions_map;
 
@@ -103,7 +106,7 @@ class Application : public OpenGLApplication {
         glm::vec3 position;
     };
 
-  private:
+private:
     SpectralSystesisInfo synthesis_info;
     bool is_systesis_info_changed;
     bool is_light_position_changed;
@@ -136,4 +139,10 @@ class Application : public OpenGLApplication {
     const int size = 100;
 
     SceneObject tree_object;
+
+    /** Perlin function smooth step */
+    static float smooth_step(float t);
+
+    /** linear interpolation */
+    static float mix(float a, float b, float t);
 };
